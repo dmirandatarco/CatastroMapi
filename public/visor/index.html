@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Responsive HTML Admin Dashboard Template based on Bootstrap 5">
+  <meta name="author" content="NobleUI">
+  <meta name="keywords"
+    content="nobleui, bootstrap, bootstrap 5, bootstrap5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+  <title>Visor Catastral</title>
+
+  <!-- color-modes:js -->
+  <!-- endinject -->
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- End fonts -->
+
+  <!-- core:css -->
+  <!-- endinject -->
+
+  <!-- Plugin css for this page -->
+  <!-- End plugin css for this page -->
+
+  <!-- inject:css -->
+  <!-- endinject -->
+
+  <!-- Layout styles -->
+  <!-- End layout styles -->
+
+  <link rel="shortcut icon" href="/visor/assets/favicon-DT5j3Ed1.ico" />
+  <script type="module" crossorigin src="/visor/assets/main-SL2zpU_Y.js"></script>
+  <link rel="stylesheet" crossorigin href="/visor/assets/main-C_sEDoRs.css">
+</head>
+<!--<body class="sidebar-dark">-->
+
+<body>
+  <div class="main-wrapper">
+
+    <!-- partial:../../partials/_sidebar.html -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="sidebar-brand"><i data-feather="map"></i> Visor<span>Map</span>
+        </a>
+        <div class="sidebar-toggler">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div class="sidebar-body">
+        <ul class="nav" id="sidebarNav">
+          <li class="nav-item nav-category">Cartografía base</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#capasBase" role="button" aria-expanded="false"
+              aria-controls="capasBase">
+              <i class="link-icon" data-feather="layers"></i>
+              <span class="link-title">Capas base</span>
+              <i class="link-arrow" data-feather="chevron-down"></i>
+            </a>
+            <div class="collapse show" id="capasBase">
+              <ul class="nav sub-menu">
+                <li class="nav-item">
+                  <div class="mb-2">
+                    &nbsp;&nbsp;<input type="radio" class="form-radio-input" name="base" id="osm" checked>
+                    <label class="form-check-label" for="base">Open Street Map</label>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="mb-2">
+                    &nbsp;&nbsp;<input type="radio" class="form-radio-input" name="base" id="sector07">
+                    <label class="form-check-label" for="base">Sector 07</label>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#limitesCensales" role="button" aria-expanded="false"
+              aria-controls="limitesCensales">
+              <i class="link-icon" data-feather="activity"></i>
+              <span class="link-title">Límites censales</span>
+              <i class="link-arrow" data-feather="chevron-down"></i>
+            </a>
+            <div class="collapse" data-bs-parent="#sidebarNav" id="limitesCensales">
+              <ul class="nav sub-menu">
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="provincias" checked>
+                    <label class="form-check-label" for="provincias">Provincias</label>
+                    <button id="btnprovincia" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnprovincia">
+                      <!--<a class="dropdown-item" data-name="eprovincias" href=""><i data-feather="trending-up" class="icon-sm"></i> Mostrar estadística</a>-->
+                      <!--<a class="dropdown-item" data-name="iprovincias" href=""><i data-feather="info" class="icon-md"></i> Identificar</a>-->
+                      <!--<a class="dropdown-item" data-name="fprovincias" href=""><i data-feather="filter" class="icon-sm"></i> Filtrar</a>-->
+                      <a class="dropdown-item" data-name="dprovincias" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="distritos">
+                    <label class="form-check-label" for="distritos">Distritos</label>
+                    <button id="btndistritos" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right;display: none;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btndistritos">
+                      <a class="dropdown-item" data-name="ddistritos" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item nav-category">Catastro predial</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#prediosUrbanos" role="button" aria-expanded="false"
+              aria-controls="prediosUrbanos">
+              <i class="link-icon" data-feather="home"></i>
+              <span class="link-title">Predios urbanos</span>
+              <i class="link-arrow" data-feather="chevron-down"></i>
+            </a>
+            <div class="collapse show" id="prediosUrbanos">
+              <ul class="nav sub-menu">
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="sectores" checked>
+                    <label class="form-check-label" for="sectores">Sectores</label>
+                    <button id="btnsectores" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnsectores">
+                      <a class="dropdown-item" data-name="dsectores" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="manzanas">
+                    <label class="form-check-label" for="manzanas">Manzanas</label>
+                    <button id="btnmanzanas" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right; display: none;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnmanzanas">
+                      <a class="dropdown-item" data-name="dmanzanas" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="lotes">
+                    <label class="form-check-label" for="lotes">Lotes<br><br></label>
+                    <button id="btnlotes" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right; display: none;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnlotes">
+                      <a class="dropdown-item" data-name="ilotes" href=""><i data-feather="info" class="icon-md"></i>
+                        Identificar</a>
+                      <a class="dropdown-item" data-name="flotes" href="" data-bs-toggle="modal"
+                        data-bs-target="#filtroLotes"><i data-feather="filter" class="icon-md"></i> Filtro</a>
+                      <a class="dropdown-item" data-name="blotes" href="" data-bs-toggle="modal"
+                        data-bs-target="#busquedaLotes"><i data-feather="search" class="icon-md"></i> Buscar</a>
+                      <a class="dropdown-item" data-name="dlotes" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="habilitacionesUrbanas">
+                    <label class="form-check-label" for="habilitacionesUrbanas">Habilitaciones <br>Urbanas</label>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="serviciosBasicos">
+                    <label class="form-check-label" for="serviciosBasicos">Servicios <br>básicos</label>
+                    <button id="btnserviciosBasicos" type="button" class="btn btn-icon btn-xs"
+                      style="float: right; display: none;" data-bs-toggle="modal"
+                      data-bs-target="#fichaServiciosBasicos"><i data-feather="filter"></i></button>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="clasificacionPredios">
+                    <label class="form-check-label" for="clasificacionPredios">Clasificación <br>de predios</label>
+                    <button id="btnclasificacionPredios" type="button" class="btn btn-icon btn-xs"
+                      style="float: right; display: none;" data-bs-toggle="modal"
+                      data-bs-target="#fichaClasificacionPredios"><i data-feather="filter"></i></button>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="tiposPersonas">
+                    <label class="form-check-label" for="tiposPersonas">Tipos de <br>personas</label>
+                    <button id="btntiposPersonas" type="button" class="btn btn-icon btn-xs"
+                      style="float: right; display: none;" data-bs-toggle="modal"
+                      data-bs-target="#filtroTipoPersonas"><i data-feather="filter"></i></button>
+                  </div>
+                </li>
+
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="puertas">
+                    <label class="form-check-label" for="puertas">Puertas</label>
+                  </div>
+                </li>
+
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="areasInvadidas">
+                    <label class="form-check-label" for="areasInvadidas">Áreas invadidas</label>
+                  </div>
+                </li>
+
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="parques">
+                    <label class="form-check-label" for="parques">Parques</label>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#areasCirulacion" role="button" aria-expanded="false"
+              aria-controls="areasCirulacion">
+              <i class="link-icon" data-feather="minimize"></i>
+              <span class="link-title">Área de circulación</span>
+              <i class="link-arrow" data-feather="chevron-down"></i>
+            </a>
+            <div class="collapse" data-bs-parent="#sidebarNav" id="areasCirulacion">
+              <ul class="nav sub-menu">
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="ejeVias">
+                    <label class="form-check-label" for="ejeVias">Eje de vias</label>
+                    <button id="btnEjeVias" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right; display: none;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnEjeVias">
+                      <a class="dropdown-item" data-name="dejeVias" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="nav-item nav-category">Interoperabilidad</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#interoperabilidad" role="button" aria-expanded="false"
+              aria-controls="interoperabilidad">
+              <i class="link-icon" data-feather="repeat"></i>
+              <span class="link-title">Bienes nacionales - SBN</span>
+              <i class="link-arrow" data-feather="chevron-down"></i>
+            </a>
+            <div class="collapse" data-bs-parent="#sidebarNav" id="interoperabilidad">
+              <ul class="nav sub-menu">
+                <li class="nav-item">
+                  <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="predios">
+                    <label class="form-check-label" for="predios">Predios </br>del estado</label>
+                    <button id="btnpredios" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false" style="float: right; display: none;"><i
+                        data-feather="settings"></i></button>
+                    <div class="dropdown-menu" aria-labelledby="btnpredios">
+                      <a class="dropdown-item" data-name="dpredios" href=""><i data-feather="download"
+                          class="icon-md"></i> Descargar shp.</a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- partial -->
+
+    <div class="page-wrapper">
+
+      <!-- partial:../../partials/_navbar.html -->
+      <nav class="navbar">
+        <div class="navbar-content">
+
+          <div class="logo-mini-wrapper">
+            <img src="/visor/assets/logo-mdw-B0NcW2FU.png" class="logo-mini logo-mini-light" alt="logo">
+            <img src="/visor/assets/logo-mdw-white-DbZW8qft.png" class="logo-mini logo-mini-dark" alt="logo">
+          </div>
+
+          <ul class="navbar-nav">
+            <li class="theme-switcher-wrapper nav-item">
+              <input type="checkbox" value="" id="theme-switcher">
+              <label for="theme-switcher">
+                <div class="box">
+                  <div class="ball"></div>
+                  <div class="icons">
+                    <i class="feather icon-sun"></i>
+                    <i class="feather icon-moon"></i>
+                  </div>
+                </div>
+              </label>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <img class="w-30px h-30px ms-1 rounded-circle" src="/visor/assets/mdw-usuario-Czx78qDy.jpg" alt="profile">
+              </a>
+              <div class="dropdown-menu p-0" aria-labelledby="profileDropdown">
+                <div class="d-flex flex-column align-items-center border-bottom px-5 py-3">
+                  <div class="mb-3">
+                    <img class="w-80px h-80px rounded-circle" src="/visor/assets/mdw-usuario-Czx78qDy.jpg" alt="">
+                  </div>
+                  <div class="text-center">
+                    <p class="fs-16px fw-bolder">Usuario catastro</p>
+                    <p class="fs-12px text-secondary">catastromdw@gmail.com</p>
+                  </div>
+                </div>
+                <ul class="list-unstyled p-1">
+                  <li class="dropdown-item py-2">
+                    <a href="../../pages/general/profile.html" class="text-body ms-0">
+                      <i class="me-2 icon-md" data-feather="user"></i>
+                      <span>Perfil</span>
+                    </a>
+                  </li>
+                  <li class="dropdown-item py-2">
+                    <a href="javascript:;" class="text-body ms-0">
+                      <i class="me-2 icon-md" data-feather="edit"></i>
+                      <span>Editar perfil</span>
+                    </a>
+                  </li>
+                  <li class="dropdown-item py-2">
+                    <a href="javascript:;" class="text-body ms-0">
+                      <i class="me-2 icon-md" data-feather="log-out"></i>
+                      <span>Salir</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+
+          <a href="#" class="sidebar-toggler">
+            <i data-feather="menu"></i>
+          </a>
+        </div>
+      </nav>
+      <!-- partial -->
+
+      <div class="page-content">
+        <div id="map"></div>
+        <div id="logo-container">
+          <img src="/visor/assets/proyecto-catastro-C9p9cuGk.jpg" alt="Logo" id="logo" />
+        </div>
+        <div id="legenda" class="legend"></div>
+        <div id="popup" class="ol-popup">
+          <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+          <div id="popup-content"></div>
+        </div>
+
+        <div id="button-group" class="button-group">
+          <button id="controlVistaGeneral" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Vista general"><i data-feather="home" class="icon-sm"></i></button>
+          <button id="controlMas" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Acercase al mapa"><i data-feather="plus" class="icon-sm"></i></button>
+          <button id="controlMenos" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Alejarse al mapa"><i data-feather="minus" class="icon-sm"></i></button>
+          <button data-panel="panel1" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Buscar por Centro Poblado"><i data-feather="search" class="icon-sm"></i></button>
+          <button data-panel="panel2" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Cargar archivo SHP"><i data-feather="upload" class="icon-sm"></i></button>
+          <button data-panel="panel3" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Ubicar coordenadas"><span class="img-svg-uc"></span></button>
+          <button id="obtenerInformacion" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+            data-bs-title="Obtener información"><i data-feather="crosshair" class="icon-sm"></i></button>
+        </div>
+      </div>
+
+      <div class="modal fade hide" id="filtroLotes" tabindex="-1" aria-labelledby="filtroLotes" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i data-feather="filter"></i> Filtro por lotes</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="btn-close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label"><strong>Mostrar lotes por:</strong></label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input type="checkbox" id="conFichaLotes" class="form-check-input">
+                    <label class="form-check-label">Con ficha catastral</label>&nbsp;<span
+                      class="badge fw-bolder ms-auto" style="background:#646B63">&nbsp;</span>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input type="checkbox" id="sinFichaLotes" class="form-check-input">
+                    <label class="form-check-label">Sin ficha catastral</label>&nbsp;<span
+                      class="badge fw-bolder ms-auto" style="background:#FF6600">&nbsp;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" id="filtrarLotes" data-bs-dismiss="modal">Mostrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="busquedaLotes" tabindex="-1" aria-labelledby="busquedaLotes" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i data-feather="search"></i> Buscar por lotes</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="btn-close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label"><strong>Buscar por:</strong></label>
+              </div>
+              <div class="mb-3">
+                <select id="tipoColumna" class="form-select mb-3">
+                  <option value="nume_doc" selected="">D.N.I.</option>
+                  <option value="lotes_id">ID. Lotes</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <input type="number" class="form-control" id="valorColumna" placeholder="Ingresar dato">
+              </div>
+              <div class="mb-3" id="mensajeBuscarLotes"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" id="buscarLotes">Mostrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel1" class="side-panel card" style="display: none;">
+        <div class="panel-header d-flex justify-content-between align-items-center p-2">
+          <p class="mb-0">Buscar por Centro Poblado</p>
+          <button class="btn-close" data-close="panel1" aria-label="Cerrar"></button>
+        </div>
+        <div class="card-body p-3">
+          <div class="mb-3 row">
+            <label for="txtBuscar" class="form-label">Buscar:</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="txtBuscar" placeholder="Digite un lugar..." maxlength="100"
+                style="width: 270px;">
+            </div>
+          </div>
+
+          <div id="mensajeConsulta" class="col-auto table-container"></div>
+          <hr class="my-3" />
+          <div class="mb-3 row" id="resultado"></div>
+        </div>
+      </div>
+
+      <div id="panel2" class="side-panel card" style="display: none;">
+        <div class="panel-header d-flex justify-content-between align-items-center p-2">
+          <p class="mb-0">Importar archivos locales</p>
+          <button class="btn-close" data-close="panel2" aria-label="Cerrar"></button>
+        </div>
+        <div class="card-body p-3">
+          <div class="mb-3">
+            <label for="tablasGeograficas" class="col-form-label-sm">
+              Tabla:
+            </label>
+            <select id="tablasGeograficas" class="form-select form-select-sm">
+              <option value="01" selected>Sector</option>
+              <option value="02">Manzanas</option>
+              <option value="03">Lotes</option>
+              <option value="04">Eje de Vía</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="archivoZip" class="form-label">
+              Archivo ShapeFile (zip):
+            </label>
+            <input class="form-control" type="file" id="archivoZip" aria-describedby="archivoHelp" />
+          </div>
+          <div class="d-flex justify-content-center gap-2">
+            <button id="btnCargarArchivoZip" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-up"></i> Cargar
+            </button>
+            <button id="limpiarArchivo" class="btn btn-outline-danger">
+              <i class="bi bi-trash"></i> Limpiar
+            </button>
+          </div>
+          <hr class="my-2" />
+          <div class="mb-3">
+            <div id="columnasArchivoShape"></div>
+          </div>
+          <div class="d-flex justify-content-center gap-2">
+            <button id="btnImportarDatos" class="btn btn-outline-secondary" style="display: none;">
+              <i data-feather="upload" class="icon-sm"></i> Importar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel3" class="side-panel card" style="display: none;">
+        <div class="panel-header d-flex justify-content-between align-items-center p-2">
+          <p class="mb-0">Ubicar por coordenadas</p>
+          <button class="btn-close" data-close="panel3" aria-label="Cerrar"></button>
+        </div>
+        <div class="card-body p-3">
+          <div class="mb-3">
+            <label for="sistemaReferencia" class="col-form-label-sm">
+              Sistema de referencia:
+            </label>
+            <select id="sistemaReferencia" class="form-select form-select-sm">
+              <option value="4326" selected>WGS84 (decimales)</option>
+              <option value="32717">UTM 17S</option>
+              <option value="32718">UTM 18S</option>
+              <option value="32719">UTM 19S</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="coordenadasX" class="col-form-label col-form-label-sm" id="labelX">Longitud:</label>
+            <input type="text" class="form-control form-control-sm" id="coordenadaX">
+          </div>
+          <div class="mb-3">
+            <label for="coordenadasY" class="col-form-label col-form-label-sm" id="labelY">Latitud:</label>
+            <input type="text" class="form-control form-control-sm" id="coordenadaY">
+          </div>
+          <div class="mb-3">
+            <div id="mensajeUbicarCoordenadas"></div>
+          </div>
+          <hr class="my-3" />
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button id="ubicarCoordenadas" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-crosshair"></i> Ir
+            </button>
+            <button id="limpiarCoordenadas" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i> Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastNotificacion" class="toast align-items-center text-white bg-primary border-0" role="alert"
+          aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              ¡Este es un mensaje de ejemplo!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+              aria-label="Cerrar"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- partial:../../partials/_footer.html -->
+
+      <footer class="footer d-flex flex-row align-items-center px-4 py-3 border-top small">
+        <!--<div id="proyeccion" class="d-flex align-items-center">
+          <label class="form-label"></i><strong>Proyección:</strong></label>
+          <select id="srid" class="form-select form-select-sm">
+            <option value="32717">WGS84 - Zona 17S</option>
+            <option value="32718">WGS84 - Zona 18S</option>
+            <option value="32719" selected="selected">WGS84 - Zona 19S</option>
+            <option value="4326">WGS84</option>
+          </select>
+        </div>
+        &nbsp;-->
+        <div id="coordenadas" class="d-flex align-items-center"></div>&nbsp;
+        <div id="escala" class="d-flex align-items-center"><strong>| Escala:</strong></div>
+        <!--<p class="text-muted"><i data-feather="map" class="icon-sm"></i> <strong>Municipalidad Distrital de MACHUPICCHU</strong> - Oficina de Catastro</p>-->
+      </footer>
+
+      <!-- partial -->
+
+    </div>
+  </div>
+
+  <!-- endinject -->
+
+  <!-- Plugin js for this page -->
+  <!-- End plugin js for this page -->
+
+  <!-- inject:js -->
+  <!-- endinject -->
+  <!-- Custom js for this page -->
+  <!-- End custom js for this page -->
+</body>
+
+</html>

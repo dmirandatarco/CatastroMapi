@@ -1,0 +1,49 @@
+Table audits {
+  id bigint [primary key]
+  user_type varchar(255)
+  user_id bigint
+  event varchar(255)
+  auditable_type text
+  auditable_id text
+  old_values text
+  new_values text
+  url text
+  ip_address inet
+  user_agent varchar(1023)
+  tags varchar(255)
+}
+Table c_hoja_informativas {
+  id bigint [primary key]
+  id_ficha varchar(19)
+  ubicacion text
+  fecha_generacion date
+}
+
+Table c_numeracions {
+  id bigint [primary key]
+  id_ficha varchar(19)
+  ubicacion text
+  fecha_generacion date
+}
+
+Table construccion_certificados {
+  id bigint [primary key]
+  codi_construccion integer
+  nume_piso varchar(2)
+  fecha date
+  mep varchar(2)
+  ecs varchar(2)
+  ecc varchar(2)
+  estr_muro_col varchar(1)
+  estr_techo varchar(1)
+  acab_piso varchar(1)
+  acab_puerta_ven varchar(1)
+  acab_revest varchar(1)
+  acab_bano varchar(1)
+  inst_elect_sanita varchar(1)
+  area_declarada numeric(8)
+  area_verificada numeric(8)
+  uca varchar(2)
+  bloque varchar(2)
+  certificado_id bigint
+}
