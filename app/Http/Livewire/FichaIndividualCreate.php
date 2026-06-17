@@ -2215,16 +2215,16 @@ class FichaIndividualCreate extends Component
                 ) AS subconsulta;
             ");
             
-            $url = env('URL_MAP') . "/servicio/wms?service=WMS&request=GetMap&layers=lotes,idLotes,verticesLote,ejeVias&styles=&format=image%2Fpng&transparent=false&version=1.1.1&width=450&height=400&srs=EPSG%3A32719&bbox=" . $extension[0]->extension . "&id=" . $ficha->id_lote;
-            $nombreArchivo = $ficha->id_ficha . '.png';
+            // $url = env('URL_MAP') . "/servicio/wms?service=WMS&request=GetMap&layers=lotes,idLotes,verticesLote,ejeVias&styles=&format=image%2Fpng&transparent=false&version=1.1.1&width=450&height=400&srs=EPSG%3A32719&bbox=" . $extension[0]->extension . "&id=" . $ficha->id_lote;
+            // $nombreArchivo = $ficha->id_ficha . '.png';
             
-            if($url){
-                $contenidoImagen = file_get_contents($url); 
-                Storage::disk('public')->put('img/imagenesplanos/' . $nombreArchivo, $contenidoImagen);
-                $fichaindividual->imagen_plano = $nombreArchivo;
-            }else{
+            // if($url){
+            //     $contenidoImagen = file_get_contents($url); 
+            //     Storage::disk('public')->put('img/imagenesplanos/' . $nombreArchivo, $contenidoImagen);
+            //     $fichaindividual->imagen_plano = $nombreArchivo;
+            // }else{
                 $fichaindividual->imagen_plano = 'imagen_plano.png';
-            }
+            // }
 
             // if ($this->imagen_plano) {
             //     $nombreImagen2 = $ficha->id_ficha . '.' . $this->imagen_plano->getClientOriginalExtension();
