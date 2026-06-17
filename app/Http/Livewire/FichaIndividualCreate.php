@@ -300,6 +300,7 @@ class FichaIndividualCreate extends Component
         for ($i = 0; $i < $this->cont; $i++) {
             $this->tipoVianombre[$i] = "";
             $this->tipoViatipo[$i] = "";
+            $this->idPuertaEditar[$i] = "";
         }
         $this->tipo_doc1 = "";
         $this->nombres1 = "";
