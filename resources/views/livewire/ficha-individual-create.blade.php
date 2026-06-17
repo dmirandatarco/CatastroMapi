@@ -2241,7 +2241,7 @@
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label d-inline-flex">
-                                            <div class="divcuadrorequired">93</div>MANTENIMIENTO
+                                            <div class="divcuadro">93</div>MANTENIMIENTO
                                         </label>
                                         <select class="form-select" data-width="100%" data-live-search="true"
                                             name="mantenimiento" id="mantenimiento" wire:model="mantenimiento"

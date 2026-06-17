@@ -855,6 +855,9 @@ class FichaController extends Controller
 
     public function fichaIndividual(Ficha $ficha)
     {
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('pcre.recursion_limit', '5000000');
+
         $fileName = 'individual.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format' => [210, 297],
@@ -865,11 +868,16 @@ class FichaController extends Controller
             'margin_header' => 10,
             'margin_footer' => 10,
         ]);
+
         $logos = Institucion::first();
-        $html = \View::make('pages.pdf.individual', compact('ficha', 'logos'));
-        $html = $html->render();
-        $mpdf->WriteHTML($html);
-        $mpdf->Output($fileName, 'I');
+
+        $html = view('pages.pdf.individual', compact('ficha', 'logos'))->render();
+
+        foreach (str_split($html, 50000) as $chunk) {
+            $mpdf->WriteHTML($chunk);
+        }
+
+        return $mpdf->Output($fileName, 'I');
     }
 
     public function fichaIndividuales($sector, $manzana, $tipo_ficha)
@@ -881,6 +889,7 @@ class FichaController extends Controller
 
 
         $fichas = $fichas->get();
+
 
         $fileName = 'individuales.pdf';
         $mpdf = new \Mpdf\Mpdf([
@@ -900,6 +909,9 @@ class FichaController extends Controller
     }
     public function fichaEconomica(Ficha $ficha)
     {
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('pcre.recursion_limit', '5000000');
+
         $fileName = 'economica.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format' => [210, 297],
@@ -911,14 +923,19 @@ class FichaController extends Controller
             'margin_footer' => 10,
         ]);
         $logos = Institucion::first();
-        $html = \View::make('pages.pdf.economica', compact('ficha', 'logos'));
-        $html = $html->render();
-        $mpdf->WriteHTML($html);
-        $mpdf->Output($fileName, 'I');
+        $html = view('pages.pdf.economica', compact('ficha', 'logos'))->render();
+
+        foreach (str_split($html, 50000) as $chunk) {
+            $mpdf->WriteHTML($chunk);
+        }
+
+        return $mpdf->Output($fileName, 'I');
     }
 
 public function fichaCotitularidad(Ficha $ficha)
     {
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('pcre.recursion_limit', '5000000');
         $fileName = 'cotitularidad.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format' => [210, 297],
@@ -930,13 +947,18 @@ public function fichaCotitularidad(Ficha $ficha)
             'margin_footer' => 10,
         ]);
         $logos = Institucion::first();
-        $html = \View::make('pages.pdf.cotitularidad', compact('ficha', 'logos'));
-        $html = $html->render();
-        $mpdf->WriteHTML($html);
-        $mpdf->Output($fileName, 'I');
+        $html = view('pages.pdf.cotitularidad', compact('ficha', 'logos'))->render();
+
+        foreach (str_split($html, 50000) as $chunk) {
+            $mpdf->WriteHTML($chunk);
+        }
+
+        return $mpdf->Output($fileName, 'I');
     }
     public function fichaBienescomunes(Ficha $ficha)
     {
+        ini_set('pcre.backtrack_limit', '5000000');
+        ini_set('pcre.recursion_limit', '5000000');
         $fileName = 'bienescomunes.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format' => [210, 297],
@@ -954,10 +976,13 @@ public function fichaCotitularidad(Ficha $ficha)
         })->sum('area_verificada');
         $totalconstrucciones = Construccion::where('id_ficha', $ficha->id_ficha)->sum('area_verificada');
         $totalinstalaciones = Instalacion::where('id_ficha', $ficha->id_ficha)->sum('prod_total');
-        $html = \View::make('pages.pdf.bienescomunes', compact('ficha', 'logos', 'total', 'totalconstrucciones', 'totalinstalaciones'));
-        $html = $html->render();
-        $mpdf->WriteHTML($html);
-        $mpdf->Output($fileName, 'I');
+       $html = view('pages.pdf.bienescomunes', compact('ficha', 'logos', 'total', 'totalconstrucciones', 'totalinstalaciones'))->render();
+
+        foreach (str_split($html, 50000) as $chunk) {
+            $mpdf->WriteHTML($chunk);
+        }
+
+        return $mpdf->Output($fileName, 'I');
     }
 
     public function fichaInformativa(Ficha $ficha)

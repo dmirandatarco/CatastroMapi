@@ -326,7 +326,7 @@ class FichaEconomicaCreate extends Component
                     'docu_presentado'               => 'nullable',
                     'esta_llenado'                  => 'required',
 
-                    'mantenimiento'                 => 'required',
+                    'mantenimiento'                 => 'nullable',
                     'observacion'                   => 'nullable|max:2000',
 
                     'supervisor'                    => 'nullable',

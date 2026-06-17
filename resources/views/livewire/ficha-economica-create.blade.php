@@ -731,7 +731,7 @@
                             </div><!-- Col -->
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label d-inline-flex" > <div class="divcuadrorequired">93</div>MANTENIMIENTO</label>
+                                    <label class="form-label d-inline-flex" > <div class="divcuadro">93</div>MANTENIMIENTO</label>
                                     <select class="form-select"  data-width="100%" data-live-search="true" name="mantenimiento" id="mantenimiento" wire:model="mantenimiento">
                                         <option value="">SELECCIONE</option>
                                         @foreach(\App\Models\TablaCodigo::where('id_tabla','=','MFE')->orderby('codigo','asc')->get() as $tablacodigo)

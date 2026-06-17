@@ -1281,7 +1281,7 @@ class FichaIndividualCreate extends Component
                         'nume_habitantes'               => 'nullable|numeric|min:0',
                         'nume_familias'                 => 'nullable|numeric|min:0',
 
-                        'mantenimiento'                 => 'required',
+                        'mantenimiento'                 => 'nullable',
                         'observacion'                   => 'nullable|max:2000',
 
                         'numdocumentodeclarante'        => 'nullable|max:8',
