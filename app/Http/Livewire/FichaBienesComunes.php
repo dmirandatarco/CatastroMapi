@@ -230,6 +230,7 @@ class FichaBienesComunes extends Component
     public $puertass=[];
     public $idFichaa;
     public $idPuertaEliminar;
+    public $idPuertaEditar;
 
     protected $listeners = ['puertaBorrarConfirmada' => 'borrarPuerta'];
 
