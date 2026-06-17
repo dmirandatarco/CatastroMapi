@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         User::create([
-            'id_usuario' => '0801081',
+            'id_usuario' => '0813041',
             'codi_usuario' => '1',
             'usuario' => 'admin',
             'password' => '$2y$10$L0rUGxHP.dD7COlQDt4wI.nnhwTY52YNddIJZpbOZTON3Lz2BC33a',

@@ -3593,9 +3593,9 @@
                 $('#departamentootros').empty();
                 $('#departamentootros').append("<option value='08' >CUSCO</option>");
                 $('#provinciaotros').empty();
-                $('#provinciaotros').append("<option value='01' >CUSCO</option>");
+                $('#provinciaotros').append("<option value='13' >URUBAMBA</option>");
                 $('#distritootros').empty();
-                $('#distritootros').append("<option value='08' >MACHUPICCHU</option>");
+                $('#distritootros').append("<option value='04' >MACHUPICCHU</option>");
             } else {
                 $('#departamentootros').empty();
                 $('#departamentootros').append("<option value='' >SELECCIONE</option>");

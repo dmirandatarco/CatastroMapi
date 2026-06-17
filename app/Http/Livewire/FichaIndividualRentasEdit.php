@@ -46,8 +46,8 @@ class FichaIndividualRentasEdit extends Component
     public $nume_ficha_lote2;
     public $cuc;
     public $dpto = '08';
-    public $prov = '01';
-    public $dist = '08';
+    public $prov = '13';
+    public $dist = '04';
     public $sector;
     public $mzna;
     public $lote;
@@ -911,14 +911,14 @@ class FichaIndividualRentasEdit extends Component
                 ]);
             }
             $this->departamentootros = "08";
-            $this->provinciaotros = "01";
-            $this->distritootros = "08";
+            $this->provinciaotros = "13";
+            $this->distritootros = "04";
 
             foreach ($this->tipopuerta as $i => $tipovia) {
                 if ($tipovia == "P") {
                     if (isset($this->tipoVia[$i])) {
                         if ($this->tipoVia[$i] != "") {
-                            $this->codigoviaotros = str_replace('080108', '', $this->tipoVia[$i]);
+                            $this->codigoviaotros = str_replace('081304', '', $this->tipoVia[$i]);
                         }
                     }
                     if (isset($this->tipoViatipo[$i])) {
@@ -940,7 +940,7 @@ class FichaIndividualRentasEdit extends Component
                         $this->ninteriorotros = $this->nume_interior;
                     }
                     if ($this->tipoHabi != "") {
-                        $this->codigohurbanootros = str_replace('080108', '', $this->tipoHabi);
+                        $this->codigohurbanootros = str_replace('081304', '', $this->tipoHabi);
                     }
                     if ($this->nomb_hab_urba != "") {
                         $this->nombrehhurbanaotros = $this->nomb_hab_urba;

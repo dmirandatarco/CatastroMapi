@@ -139,7 +139,7 @@
                                     <div class="mb-3">
                                         <label class="form-label labelpeque d-inline-flex">UBIGEO</label>
                                         <input type="text" class="form-control" placeholder="" readonly
-                                            value="080108">
+                                            value="081304">
                                     </div>
                                 </div>
                                 <div class="col-md-1">

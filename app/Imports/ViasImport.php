@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 class ViasImport implements OnEachRow, WithHeadingRow, WithBatchInserts, WithChunkReading, WithValidation
 {
-    public $ubigeo = '080108';
+    public $ubigeo = '081304';
 
     public function __construct()
     {

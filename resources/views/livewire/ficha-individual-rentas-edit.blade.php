@@ -2162,9 +2162,9 @@
             $('#departamentootros').empty();
             $('#departamentootros').append("<option value='08' >CUSCO</option>");
             $('#provinciaotros').empty();
-            $('#provinciaotros').append("<option value='01' ></option>");
+            $('#provinciaotros').append("<option value='13' ></option>");
             $('#distritootros').empty();
-            $('#distritootros').append("<option value='08' ></option>");
+            $('#distritootros').append("<option value='04' ></option>");
         } else {
             $('#departamentootros').empty();
             $('#departamentootros').append("<option value='' >SELECCIONE</option>");
