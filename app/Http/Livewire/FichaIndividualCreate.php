@@ -967,7 +967,7 @@ class FichaIndividualCreate extends Component
                     try {
                         $response = Http::timeout(10)->withHeaders([
                             'Referer' => 'http://apis.net.pe/api-ruc',
-                            'Authorization' => 'Bearer ' . $token
+                            
                         ])->get($urldni . $dni);
                         $persona = ($response->json());
                         if (isset($persona['error']) || $persona == "") {
