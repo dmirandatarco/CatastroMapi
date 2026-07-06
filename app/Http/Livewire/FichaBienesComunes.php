@@ -252,6 +252,9 @@ class FichaBienesComunes extends Component
         for($i=0;$i<$this->cont;$i++){
             $this->tipoVianombre[$i]="";
             $this->tipoViatipo[$i]="";
+            $this->tipopuerta[$i] = null;
+            $this->nume_muni[$i] = null;
+            $this->cond_nume[$i] = null;
         }
     }
 

@@ -435,7 +435,7 @@
                                     </label>
                                     <input type="text" class="form-control" name="zona_dist"
                                         wire:model="zona_dist" placeholder="Zona, Sector, Etapa" tabindex="28"
-                                        maxlength="15">
+                                        maxlength="20">
                                     <span class="text-danger">
                                         @error('zona_dist')
                                             {{ $message }}
