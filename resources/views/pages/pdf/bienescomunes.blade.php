@@ -2368,7 +2368,7 @@
                 </div>
             </div>
             <div style="width: 120px;height: 16px;float:left;" class="texto2 fz8 lh14">
-                @if($ficha?->sunarp->asie_fabrica!="")
+                @if($ficha?->sunarp?->asie_fabrica!="")
                 {{$ficha?->sunarp?->asie_fabrica}}
                 @endif
             </div>

@@ -873,10 +873,7 @@ class FichaController extends Controller
 
         $html = view('pages.pdf.individual', compact('ficha', 'logos'))->render();
 
-        foreach (str_split($html, 50000) as $chunk) {
-            $mpdf->WriteHTML($chunk);
-        }
-
+        $mpdf->WriteHTML($html);
         return $mpdf->Output($fileName, 'I');
     }
 
