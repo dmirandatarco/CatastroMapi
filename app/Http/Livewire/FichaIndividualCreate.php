@@ -301,6 +301,7 @@ class FichaIndividualCreate extends Component
             $this->tipoVianombre[$i] = "";
             $this->tipoViatipo[$i] = "";
             $this->idPuertaEditar[$i] = "";
+            $this->tipoVia[$i] = null;
             $this->tipopuerta[$i] = null;
             $this->nume_muni[$i] = null;
             $this->cond_nume[$i] = null;
