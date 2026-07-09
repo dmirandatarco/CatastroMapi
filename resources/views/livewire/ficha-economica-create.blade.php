@@ -1384,7 +1384,7 @@
     <script>
         $('#distritoconductor').append("<option value='' >SELECCIONE</option>");
         <?php foreach ($distritos  as $dis): ?>
-            if({{$dis?->cod_pro}}=='{{$deparamentoconductor}}' && {{$dis?->cod_dep}}=='{{$provinciaconductor}}')
+            if({{$dis?->cod_pro}}=='{{$provinciaconductor}}' && {{$dis?->cod_dep}}=='{{$deparamentoconductor}}')
             {
                 $('#distritoconductor').append("<option value='{{$dis?->codi_dis}}' >{{$dis?->descri}}</option>");
             }
