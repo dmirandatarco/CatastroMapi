@@ -1367,6 +1367,31 @@
 @push('custom-scripts')
 <script>
 
+
+    $('#deparamentoconductor').append("<option value='' >SELECCIONE</option>");
+    <?php foreach ($departamentos  as $dep): ?>
+        $('#deparamentoconductor').append("<option value='{{$dep?->cod_dep}}' >{{$dep?->descri}}</option>");
+    <?php endforeach ?>
+</script>
+    <script>
+        $('#provinciaconductor').append("<option value='' >SELECCIONE</option>");
+        <?php foreach ($provincias  as $pro): ?>
+            if({{$pro?->cod_dep}}=='{{$deparamentoconductor}}'){
+                $('#provinciaconductor').append("<option value='{{$pro?->cod_pro}}' >{{$pro?->descri}}</option>");
+            }
+        <?php endforeach ?>
+    </script>
+    <script>
+        $('#distritoconductor').append("<option value='' >SELECCIONE</option>");
+        <?php foreach ($distritos  as $dis): ?>
+            if({{$dis?->cod_pro}}=='{{$deparamentoconductor}}' && {{$dis?->cod_dep}}=='{{$provinciaconductor}}')
+            {
+                $('#distritoconductor').append("<option value='{{$dis?->codi_dis}}' >{{$dis?->descri}}</option>");
+            }
+        <?php endforeach ?>
+    </script>
+<script>
+
 $('#deparamentoconductor').change(agregarValores2);
 $('#provinciaconductor').change(agregarValores3);
 
