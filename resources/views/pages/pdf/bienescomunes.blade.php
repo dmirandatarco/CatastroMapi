@@ -2383,7 +2383,7 @@
             
             
             <div style="width: 120px;height: 16px;float:left;" class="texto2 fz8 lh14">
-                @if($ficha?->sunarp->fecha_fabrica!="")
+                @if($ficha?->sunarp?->fecha_fabrica!="")
                 {{date("d-m-Y", strtotime($ficha?->sunarp?->fecha_fabrica))}}
                 @endif
             </div>

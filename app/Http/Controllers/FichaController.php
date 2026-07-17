@@ -919,13 +919,11 @@ class FichaController extends Controller
             'margin_header' => 10,
             'margin_footer' => 10,
         ]);
+        
         $logos = Institucion::first();
         $html = view('pages.pdf.economica', compact('ficha', 'logos'))->render();
 
-        foreach (str_split($html, 50000) as $chunk) {
-            $mpdf->WriteHTML($chunk);
-        }
-
+        $mpdf->WriteHTML($html);
         return $mpdf->Output($fileName, 'I');
     }
 
@@ -946,9 +944,7 @@ public function fichaCotitularidad(Ficha $ficha)
         $logos = Institucion::first();
         $html = view('pages.pdf.cotitularidad', compact('ficha', 'logos'))->render();
 
-        foreach (str_split($html, 50000) as $chunk) {
-            $mpdf->WriteHTML($chunk);
-        }
+        $mpdf->WriteHTML($html);
 
         return $mpdf->Output($fileName, 'I');
     }
@@ -973,11 +969,9 @@ public function fichaCotitularidad(Ficha $ficha)
         })->sum('area_verificada');
         $totalconstrucciones = Construccion::where('id_ficha', $ficha->id_ficha)->sum('area_verificada');
         $totalinstalaciones = Instalacion::where('id_ficha', $ficha->id_ficha)->sum('prod_total');
-       $html = view('pages.pdf.bienescomunes', compact('ficha', 'logos', 'total', 'totalconstrucciones', 'totalinstalaciones'))->render();
+        $html = view('pages.pdf.bienescomunes', compact('ficha', 'logos', 'total', 'totalconstrucciones', 'totalinstalaciones'))->render();
 
-        foreach (str_split($html, 50000) as $chunk) {
-            $mpdf->WriteHTML($chunk);
-        }
+        $mpdf->WriteHTML($html);
 
         return $mpdf->Output($fileName, 'I');
     }

@@ -16,6 +16,7 @@ use App\Models\Institucion;
 use App\Models\Conductor;
 use App\Models\DomicilioTitular;
 use App\Models\AutorizacionAnuncio;
+use App\Models\Via;
 use DB;
 
 
@@ -1061,12 +1062,27 @@ class FichaEconomicaCreate extends Component
     public function updatedcodigohurbanoconductor($id)
     {
         $idbuscar = str_pad($id, 4, '0', STR_PAD_LEFT);
-        $this->hab_urbana2 = HabUrbana::where('codi_hab_urba', $idbuscar)->first();
+        $hab_urbanabuscar = HabUrbana::where('codi_hab_urba', $idbuscar)->first();
 
         if ($this->hab_urbana2 == "") {
             $this->nombrehhurbanaconductor = "";
         } else {
-            $this->nombrehhurbanaconductor = $this->hab_urbana2->tipo_hab_urba . " " . $this->hab_urbana2->nomb_hab_urba;
+            $this->nombrehhurbanaconductor = $hab_urbanabuscar->tipo_hab_urba . " " . $hab_urbanabuscar->nomb_hab_urba;
+        }
+    }
+
+    public function updatedcodigoviaconductor($id)
+    {
+        $idbuscar = str_pad($id, 6, '0', STR_PAD_LEFT);
+        $viabuscar = Via::where('codi_via', $idbuscar)->first();
+
+
+        if ($viabuscar == "") {
+            $this->nombreviaconductor = "";
+            $this->tipoviaconductor = "";
+        } else {
+            $this->tipoviaconductor = $viabuscar->tipo_via;
+            $this->nombreviaconductor = $viabuscar->nomb_via;
         }
     }
 }
