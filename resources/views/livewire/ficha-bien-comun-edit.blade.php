@@ -1279,7 +1279,7 @@
                                                 @enderror
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control"  name="atc[]" placeholder="FECHA" id="atc.{{$i}}"  wire:model="atc.{{$i}}" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="10">
+                                                <input type="text" class="form-control"  name="atc[]" placeholder="FECHA" id="atc.{{$i}}"  wire:model="atc.{{$i}}" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="10">
                                                 @error('atc.'.$i)
                                                     <span class="error-message" style="color:red">{{ $message }}</span>
                                                 @enderror
