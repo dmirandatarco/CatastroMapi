@@ -1345,7 +1345,7 @@ class FichaEconomicaEdit extends Component
         $idbuscar = str_pad($id, 4, '0', STR_PAD_LEFT);
         $hab_urbanabuscar = HabUrbana::where('codi_hab_urba', $idbuscar)->first();
 
-        if ($this->hab_urbana2 == "") {
+        if ($hab_urbanabuscar == "") {
             $this->nombrehhurbanaconductor = "";
         } else {
             $this->nombrehhurbanaconductor = $hab_urbanabuscar->tipo_hab_urba . " " . $hab_urbanabuscar->nomb_hab_urba;

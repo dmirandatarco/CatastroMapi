@@ -1350,7 +1350,7 @@ class FichaIndividualEdit extends Component
             }
 
             /*VALIDACIONES*/
-            $id = $this->fichaanterior->fichaindividual->id_ficha;
+            $id = $this->fichaanterior?->fichaindividual?->id_ficha;
             if ($this->condtitular != "05") {
 
                 $this->validate([

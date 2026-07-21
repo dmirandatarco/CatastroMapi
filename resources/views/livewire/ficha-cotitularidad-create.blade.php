@@ -78,11 +78,11 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label labelpeque">PROV.</label>
-                                <input type="text" class="form-control" name="prov" readonly value="01">
+                                <input type="text" class="form-control" name="prov" readonly value="13">
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label labelpeque">DIST.</label>
-                                <input type="text" class="form-control" name="dist" readonly value="08">
+                                <input type="text" class="form-control" name="dist" readonly value="04">
                             </div>
                         </div>
                         <div class="col-md-1">
