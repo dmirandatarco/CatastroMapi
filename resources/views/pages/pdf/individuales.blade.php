@@ -397,22 +397,6 @@
                 <img src="{{ $logos?->logo_catastro }}" alt="">
             </div>
         </div>
-        <div style="height:102px; width:800px;background-color:#fff;border:none;margin-top:30px;margin-bottom:0px;">
-            <div style="height:12px; width:315px; margin:auto;" class="bn">
-
-
-                <div style="width: 150px;height:100px;float:left;" class="bn">
-                    <img src="{{ 'storage/img/imageneslotes/' . $ficha?->fichaindividual?->imagen_lote }}"
-                        alt="imglotes" style="width: 200px;height:150px;  object-fit: cover;">
-                </div>
-                <div style="width: 10px;height:100px;float:left;" class=" bn">
-                </div>
-                <div style="width: 150px;height:100px;float:left;" class="bn">
-                    <img src="{{ 'storage/img/imagenesplanos/' . $ficha?->fichaindividual?->imagen_plano }}"
-                        alt="imgplanos" style="width: 200px;height:150px;  object-fit: contain;">
-                </div>
-            </div>
-        </div>
 
         <!-- fila 07-->
         <div style="height:7px; width:800px;background-color:#fff;border:none;margin-top:0px;margin-bottom:0px;">
