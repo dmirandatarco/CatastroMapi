@@ -978,6 +978,9 @@ public function fichaCotitularidad(Ficha $ficha)
 
     public function fichaInformativa(Ficha $ficha)
     {
+        ini_set('pcre.backtrack_limit', '10000000');
+        ini_set('pcre.recursion_limit', '1000000');
+
         $mytime = Carbon::now('America/Lima');
         $fileName = 'informativa.pdf';
         $mpdf = new \Mpdf\Mpdf([

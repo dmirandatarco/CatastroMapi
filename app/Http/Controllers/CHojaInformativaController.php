@@ -13,6 +13,8 @@ class CHojaInformativaController extends Controller
     //
     public function generarHojaInformativa(Ficha $ficha){
         try{
+             ini_set('pcre.backtrack_limit', '10000000');
+            ini_set('pcre.recursion_limit', '1000000');
             $mytime = Carbon::now('America/Lima');
             $fileName = $ficha->id_ficha . 'hojainformativa.pdf';
             $rutaPDF = storage_path('app/public/pdf/hojainformativa/');
