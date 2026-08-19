@@ -29,6 +29,8 @@ class GenerarCertificado extends Model
         'certificado_id',
     ];
 
+    public $timestamps = false;
+
     public function ficha()
     {
         return $this->belongsTo('App\Models\Ficha','id_ficha','id_ficha');

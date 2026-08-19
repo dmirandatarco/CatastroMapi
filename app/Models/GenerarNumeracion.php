@@ -26,6 +26,8 @@ class GenerarNumeracion extends Model
         'id_usuario',
     ];
 
+    public $timestamps = false;
+
     public function ficha()
     {
         return $this->belongsTo('App\Models\Ficha','id_ficha','id_ficha');
