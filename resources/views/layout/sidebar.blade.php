@@ -258,13 +258,13 @@
                                         Informativa</a>
                                 </li>
                             @endcan
-                            @can('impresion.vercertificado')
+                            {{-- @can('impresion.vercertificado')
                                 <li class="nav-item">
                                     <a href="{{ url('/impresion/vercertificado') }}"
                                         class="nav-link {{ active_class(['impresion/vercertificado']) }}">Certificado
                                         Catastral</a>
                                 </li>
-                            @endcan
+                            @endcan --}}
                             @can('impresion.veradministracion')
                                 <li class="nav-item">
                                     <a href="{{ url('/impresion/veradministracion') }}"

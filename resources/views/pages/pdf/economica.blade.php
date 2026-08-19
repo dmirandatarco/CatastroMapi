@@ -1198,44 +1198,68 @@
         </div>
       </div>
       <!--FOREACH 71 - 69-->
-      @foreach($ficha?->autorizacion_anuncios as $autorizacion)
-      <div style="width: 716px;height:16px;margin: auto;">
-        <div style="width: 87px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->codi_anuncio}}
-        </div>
-        <div style="width: 180px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          @if($autorizacion?->codigos!="")
-            {{$autorizacion?->codigos?->desc_codigo}}
-          @endif
-        </div>
-        <div style="width: 31px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->nume_lados}}
-        </div>
-        <div style="width: 74px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->area_autorizada}}
-        </div>
-        <div style="width: 71px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->area_verificada}}
-        </div>
-        <div style="width: 73px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->nume_expediente}}
-        </div>
-        <div style="width: 66px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          {{$autorizacion?->nume_licencia}}
-        </div>
-        <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            @if($autorizacion?->fecha_expedicion !='')
-          {{date("d-m-Y", strtotime($autorizacion?->fecha_expedicion))}}
-            @endif
-        </div>
-        <div style="width: 63px;height: 16px;float:left;" class="texto2 fz8 lh14">
-          @if($autorizacion?->fecha_vencimiento !='')
-          {{date("d-m-Y", strtotime($autorizacion?->fecha_vencimiento))}}
-          @endif
+      @forelse($ficha?->autorizacion_anuncios ?? [] as $autorizacion)
+
+        <div style="width: 716px;height:16px;margin: auto;">
+            <div style="width: 87px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->codi_anuncio }}
+            </div>
+
+            <div style="width: 180px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                @if($autorizacion?->codigos != "")
+                    {{ $autorizacion?->codigos?->desc_codigo }}
+                @endif
+            </div>
+
+            <div style="width: 31px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->nume_lados }}
+            </div>
+
+            <div style="width: 74px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->area_autorizada }}
+            </div>
+
+            <div style="width: 71px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->area_verificada }}
+            </div>
+
+            <div style="width: 73px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->nume_expediente }}
+            </div>
+
+            <div style="width: 66px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $autorizacion?->nume_licencia }}
+            </div>
+
+            <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                @if($autorizacion?->fecha_expedicion != '')
+                    {{ date("d-m-Y", strtotime($autorizacion?->fecha_expedicion)) }}
+                @endif
+            </div>
+
+            <div style="width: 63px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                @if($autorizacion?->fecha_vencimiento != '')
+                    {{ date("d-m-Y", strtotime($autorizacion?->fecha_vencimiento)) }}
+                @endif
+            </div>
         </div>
 
-      </div>
-    @endforeach
+    @empty
+
+        {{-- Fila vacía cuando no existen autorizaciones --}}
+        <div style="width: 716px;height:16px;margin: auto;">
+            <div style="width: 87px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 180px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 31px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 74px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 71px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 73px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 66px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 63px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+        </div>
+
+    @endforelse
       <!--FOREACH 71 - 69-->
 
     <!-- 71 - 69 -->

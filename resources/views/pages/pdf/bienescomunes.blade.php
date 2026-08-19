@@ -1765,40 +1765,71 @@
         </div>
     </div>
     <!--FOREACH 71 - 69-->
-    @foreach($ficha?->instalacions as $instalacion)
-    <div style="width: 716px;height:16px;margin: auto;">
-        <div style="width: 75px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->codiinstalacion?->codi_instalacion}}
+    @forelse($ficha?->instalacions ?? [] as $instalacion)
+
+        <div style="width: 716px;height:16px;margin: auto;">
+            <div style="width: 75px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->codiinstalacion?->codi_instalacion }}
+            </div>
+
+            <div style="width: 220px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->codiinstalacion?->desc_instalacion }}
+            </div>
+
+            <div style="width: 48px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                @if($instalacion?->fecha)
+                    {{ date("m", strtotime($instalacion->fecha)) }}
+                @endif
+            </div>
+
+            <div style="width: 49.9px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                @if($instalacion?->fecha)
+                    {{ date("Y", strtotime($instalacion->fecha)) }}
+                @endif
+            </div>
+
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->mep }}
+            </div>
+
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->ecs }}
+            </div>
+
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->ecc }}
+            </div>
+
+            <div style="width: 60px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->prod_total }}
+            </div>
+
+            <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->uni_med }}
+            </div>
+
+            <div style="width: 40.9px;height: 16px;float:left;" class="texto2 fz8 lh14">
+                {{ $instalacion?->uca }}
+            </div>
         </div>
-        <div style="width: 220px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->codiinstalacion?->desc_instalacion}}
+
+    @empty
+
+        {{-- Fila vacía --}}
+        <div style="width: 716px;height:16px;margin: auto;">
+            <div style="width: 75px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 220px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 48px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 49.9px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 60px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
+            <div style="width: 40.9px;height: 16px;float:left;" class="texto2 fz8 lh14">&nbsp;</div>
         </div>
-        <div style="width: 48px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{date("m", strtotime($instalacion?->fecha))}}
-        </div>
-        <div style="width: 49.9px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{date("Y", strtotime($instalacion?->fecha))}}
-        </div>
-        <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->mep}}
-        </div>
-        <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->ecs}}
-        </div>
-        <div style="width: 50px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->ecc}}
-        </div>
-        <div style="width: 60px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->prod_total}}
-        </div>
-        <div style="width: 62px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->uni_med}}
-        </div>
-        <div style="width: 40.9px;height: 16px;float:left;" class="texto2 fz8 lh14">
-            {{$instalacion?->uca}}
-        </div>
-    </div>
-    @endforeach
+
+    @endforelse
     <div id="pagebreak1"></div>
 
     <div style="height:7px; width:800px;background-color:#fff;border:none;margin-top:5px;margin-bottom:5px">
