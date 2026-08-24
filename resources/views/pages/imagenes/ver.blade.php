@@ -112,7 +112,10 @@
                             <a class="btn btn-success btn-icon me-2" href=""  target="_blank"id="imagenfachada">
                                 <i data-feather="image"></i>
                             </a>
-                            <button class="btn btn-danger btn-icon mb-5 eliminar-imagen" type="button" id="imagenfachada" data-tipo="fachada" >
+                            <button class="btn btn-danger btn-icon mb-5 eliminar-imagen"
+                                type="button"
+                                id="eliminarimagenfachada"
+                                data-tipo="fachada">
                                 <i data-feather="trash" ></i>
                             </button>
                         </div>
@@ -267,94 +270,107 @@
 
 <script>
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     $('.eliminar-imagen').click(function () {
-        let tipo = $(this).data('tipo');
-        console.log(tipo)
+        const tipo = $(this).data('tipo');
+
         $('#tipo_eliminar').val(tipo);
         $('#formEliminar').submit();
     });
 
-});
-    $('#buscarCliente').select2();
+    const modalAgregar = document.getElementById('Agregar');
 
-    
-var editar = document.getElementById('Agregar');
+    function actualizarArchivo(valor, enlace, eliminar, ruta) {
+        // Limpiar siempre el estado anterior
+        $(enlace).attr('href', '').hide();
+        $(eliminar).hide();
 
-editar.addEventListener('show.bs.modal', function (event) {
-    var button = event.relatedTarget
+        // Mostrarlo nuevamente si la ficha actual tiene archivo
+        if (valor && valor !== 'null' && valor !== 'undefined') {
+            $(enlace)
+                .attr('href', ruta + valor)
+                .show();
 
-    var id = button.getAttribute('data-id')  
-    var imagenfachada = button.getAttribute('data-fachada')  
-    var imagenplano = button.getAttribute('data-plano')  
-    var imagen1 = button.getAttribute('data-imagen1')  
-    var imagen2 = button.getAttribute('data-imagen2')  
-    var imagen3 = button.getAttribute('data-imagen3')  
-    var pdfplano = button.getAttribute('data-planopdf')  
-    var pdfrentas = button.getAttribute('data-rentaspdf')  
-    var pdfsunarp = button.getAttribute('data-sunarpdf')
-
-    var idModal = editar.querySelector('.id_ficha')
-    idModal.value = id;
-
-    $('#id_eliminar').val(id);
-
-    if(imagenfachada){
-        $('#imagenfachada').attr('href', '{{$base}}/imageneslotes/'+imagenfachada);
-    }else{
-        $('#imagenfachada').hide();
-        $('#imagenfachada').hide();
+            $(eliminar).show();
+        }
     }
 
-    if(imagenplano){
-        $('#imagenplano').attr('href', '{{$base}}/imagenesplanos/'+imagenplano);
-    }else{
-        $('#imagenplano').hide();
-        $('#eliminarimagenplano').hide();
-    }
+    modalAgregar.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
 
-    if(imagen1){
-        $('#imagenimagen1').attr('href', '{{$base}}/archivos/'+imagen1);
-    }else{
-        $('#imagenimagen1').hide();
-        $('#eliminarimagenimagen1').hide();
-    }
+        const id            = button.getAttribute('data-id');
+        const imagenFachada = button.getAttribute('data-fachada');
+        const imagenPlano   = button.getAttribute('data-plano');
+        const imagen1       = button.getAttribute('data-imagen1');
+        const imagen2       = button.getAttribute('data-imagen2');
+        const imagen3       = button.getAttribute('data-imagen3');
+        const pdfPlano      = button.getAttribute('data-planopdf');
+        const pdfRentas     = button.getAttribute('data-rentaspdf');
+        const pdfSunarp     = button.getAttribute('data-sunarpdf');
 
-    if(imagen2){
-        $('#imagenimagen2').attr('href', '{{$base}}/archivos/'+imagen2);
-    }else{
-        $('#imagenimagen2').hide();
-        $('#eliminarimagenimagen2').hide();
-    }
+        $('#id_ficha').val(id);
+        $('#id_eliminar').val(id);
 
-    if(imagen3){
-        $('#imagenimagen3').attr('href', '{{$base}}/archivos/'+imagen3);
-    }else{
-        $('#imagenimagen3').hide();
-        $('#eliminarimagenimagen3').hide();
-    }
-    if(pdfrentas){
-        $('#imagenpdfrentas').attr('href', '{{$base}}/archivos/'+pdfrentas);
-    }else{
-        $('#imagenpdfrentas').hide();
-        $('#eliminarimagenpdfrentas').hide();
-    }
+        // Limpiar archivos seleccionados anteriormente
+        $(modalAgregar).find('input[type="file"]').val('');
 
-    if(pdfsunarp){
-        $('#imagenpdfsunarp').attr('href', '{{$base}}/archivos/'+pdfsunarp);
-    }else{
-        $('#imagenpdfsunarp').hide();
-        $('#eliminarimagenpdfsunarp').hide();
-    }
+        actualizarArchivo(
+            imagenFachada,
+            '#imagenfachada',
+            '#eliminarimagenfachada',
+            '{{$base}}/imageneslotes/'
+        );
 
-    if(pdfplano){
-        $('#imagenpdfplano').attr('href', '{{$base}}/archivos/'+pdfplano);
-    }else{
-        $('#imagenpdfplano').hide();
-        $('#eliminarimagenpdfplano').hide();
-    }
+        actualizarArchivo(
+            imagenPlano,
+            '#imagenplano',
+            '#eliminarimagenplano',
+            '{{$base}}/imagenesplanos/'
+        );
 
+        actualizarArchivo(
+            imagen1,
+            '#imagenimagen1',
+            '#eliminarimagenimagen1',
+            '{{$base}}/archivos/'
+        );
+
+        actualizarArchivo(
+            imagen2,
+            '#imagenimagen2',
+            '#eliminarimagenimagen2',
+            '{{$base}}/archivos/'
+        );
+
+        actualizarArchivo(
+            imagen3,
+            '#imagenimagen3',
+            '#eliminarimagenimagen3',
+            '{{$base}}/archivos/'
+        );
+
+        actualizarArchivo(
+            pdfPlano,
+            '#imagenpdfplano',
+            '#eliminarimagenpdfplano',
+            '{{$base}}/archivos/'
+        );
+
+        actualizarArchivo(
+            pdfSunarp,
+            '#imagenpdfsunarp',
+            '#eliminarimagenpdfsunarp',
+            '{{$base}}/archivos/'
+        );
+
+        actualizarArchivo(
+            pdfRentas,
+            '#imagenpdfrentas',
+            '#eliminarimagenpdfrentas',
+            '{{$base}}/archivos/'
+        );
+    });
 });
 
 
