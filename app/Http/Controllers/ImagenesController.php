@@ -62,63 +62,190 @@ class ImagenesController extends Controller
 
     public function store(Request $request)
     {
-        $fichaindividual = FichaIndividual::where('id_ficha',$request->id_ficha)->first();
-        $archivo = Archivo::where('id_ficha',$request->id_ficha)->first();
-        if(!$archivo){
-            $archivo = new Archivo();
-            $archivo->id_ficha = $request->id_ficha;
-            $archivo->save();
-        }
+        $request->validate([
+            'id_ficha'  => ['required', 'exists:tf_fichas,id_ficha'],
+            'fachada'   => ['nullable', 'image'],
+            'plano'     => ['nullable', 'image'],
+            'imagen1'   => ['nullable', 'image'],
+            'imagen2'   => ['nullable', 'image'],
+            'imagen3'   => ['nullable', 'image'],
+            'pdfplano'  => ['nullable', 'file', 'mimes:pdf'],
+            'pdfsunarp' => ['nullable', 'file', 'mimes:pdf'],
+            'pdfrentas' => ['nullable', 'file', 'mimes:pdf'],
+        ]);
+
+        // Buscar la ficha seleccionada
+        $fichaSeleccionada = Ficha::where('id_ficha', $request->id_ficha)->firstOrFail();
+
+        // Obtener todas las fichas que pertenecen al mismo lote
+        $idsFichas = Ficha::where('id_lote', $fichaSeleccionada->id_lote)
+            ->pluck('id_ficha');
+
+        /*
+        * IMAGEN PRINCIPAL
+        */
         if ($request->hasFile('fachada')) {
-            $nombrerecibo = $request->id_ficha.'.'.$request->file('fachada')->getClientOriginalExtension();
-            $ruta = $request->file('fachada')->storeAs('\img\imageneslotes/', $nombrerecibo);
-            $fichaindividual->imagen_lote = $nombrerecibo;
-            $fichaindividual->save();
+            $archivoSubido = $request->file('fachada');
+
+            $nombre = $request->id_ficha . '.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/imageneslotes', $nombre);
+
+            FichaIndividual::whereIn('id_ficha', $idsFichas)
+                ->update([
+                    'imagen_lote' => $nombre,
+                ]);
         }
+
+        /*
+        * IMAGEN DEL PLANO
+        */
         if ($request->hasFile('plano')) {
-            $nombrerecibo = $request->id_ficha.'-mapa.'.$request->file('plano')->getClientOriginalExtension();
-            $ruta = $request->file('plano')->storeAs('\img\imagenesplanos/', $nombrerecibo);
-            $fichaindividual->imagen_plano = $nombrerecibo;
-            $fichaindividual->save();
+            $archivoSubido = $request->file('plano');
+
+            $nombre = $request->id_ficha . '-mapa.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/imagenesplanos', $nombre);
+
+            FichaIndividual::whereIn('id_ficha', $idsFichas)
+                ->update([
+                    'imagen_plano' => $nombre,
+                ]);
         }
+
+        /*
+        * IMAGEN 1
+        */
         if ($request->hasFile('imagen1')) {
-            $nombrerecibo = $request->id_ficha.'-1.'.$request->file('imagen1')->getClientOriginalExtension();
-            $ruta = $request->file('imagen1')->storeAs('\img\archivos/', $nombrerecibo);
-            
-            $archivo->imagen1 = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('imagen1');
+
+            $nombre = $request->id_ficha . '-1.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'imagen1',
+                $nombre
+            );
         }
+
+        /*
+        * IMAGEN 2
+        */
         if ($request->hasFile('imagen2')) {
-            $nombrerecibo = $request->id_ficha.'-2.'.$request->file('imagen2')->getClientOriginalExtension();
-            $ruta = $request->file('imagen2')->storeAs('\img\archivos/', $nombrerecibo);
-            $archivo->imagen2 = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('imagen2');
+
+            $nombre = $request->id_ficha . '-2.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'imagen2',
+                $nombre
+            );
         }
+
+        /*
+        * IMAGEN 3
+        */
         if ($request->hasFile('imagen3')) {
-            $nombrerecibo = $request->id_ficha.'-3.'.$request->file('imagen3')->getClientOriginalExtension();
-            $ruta = $request->file('imagen3')->storeAs('\img\archivos/', $nombrerecibo);
-            $archivo->imagen3 = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('imagen3');
+
+            $nombre = $request->id_ficha . '-3.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'imagen3',
+                $nombre
+            );
         }
+
+        /*
+        * PDF PLANO
+        */
         if ($request->hasFile('pdfplano')) {
-            $nombrerecibo = $request->id_ficha.'-plano.'.$request->file('pdfplano')->getClientOriginalExtension();
-            $ruta = $request->file('pdfplano')->storeAs('\img\archivos/', $nombrerecibo);
-            $archivo->plano = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('pdfplano');
+
+            $nombre = $request->id_ficha . '-plano.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'plano',
+                $nombre
+            );
         }
+
+        /*
+        * PDF SUNARP
+        */
         if ($request->hasFile('pdfsunarp')) {
-            $nombrerecibo = $request->id_ficha.'-sunarp.'.$request->file('pdfsunarp')->getClientOriginalExtension();
-            $ruta = $request->file('pdfsunarp')->storeAs('\img\archivos/', $nombrerecibo);
-            $archivo->sunarp = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('pdfsunarp');
+
+            $nombre = $request->id_ficha . '-sunarp.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'sunarp',
+                $nombre
+            );
         }
+
+        /*
+        * PDF RENTAS
+        */
         if ($request->hasFile('pdfrentas')) {
-            $nombrerecibo = $request->id_ficha.'-rentas.'.$request->file('pdfrentas')->getClientOriginalExtension();
-            $ruta = $request->file('pdfrentas')->storeAs('\img\archivos/', $nombrerecibo);
-            $archivo->rentas = $nombrerecibo;
-            $archivo->save();
+            $archivoSubido = $request->file('pdfrentas');
+
+            $nombre = $request->id_ficha . '-rentas.' .
+                $archivoSubido->getClientOriginalExtension();
+
+            $archivoSubido->storeAs('img/archivos', $nombre);
+
+            $this->actualizarArchivosDelLote(
+                $idsFichas,
+                'rentas',
+                $nombre
+            );
         }
-        return redirect()->back()->with('success', 'Imagen Agregado Correctamente!');
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Los archivos fueron guardados en todas las fichas del lote.'
+            );
+    }
+
+    private function actualizarArchivosDelLote(
+        $idsFichas,
+        string $campo,
+        string $nombre
+    ): void {
+        foreach ($idsFichas as $idFicha) {
+            Archivo::updateOrCreate(
+                [
+                    'id_ficha' => $idFicha,
+                ],
+                [
+                    $campo => $nombre,
+                ]
+            );
+        }
     }
 
     public function destroy(Request $request)
