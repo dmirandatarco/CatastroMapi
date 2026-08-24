@@ -89,34 +89,27 @@
                         <tbody>
                             @foreach($titulares as $titular)
                                 <tr>
-                                    <td>{{$titular->lote->cuc}}</td>
-                                    <td>{{$titular->cuc_ficha}}</td>
-                                    <td>
-                                        @foreach($titular->titularesPersonalizados() as $titular1)
-                                            {{ $titular1->nombres }}<br>
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        @foreach($titular->titularesPersonalizados() as $titular1)
-                                            {{ $titular1->porc_cotitular }}<br>
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        @foreach($titular->titularesPersonalizados() as $titular1)
-                                            {{ $titular1->nume_doc }}<br>
-                                        @endforeach
-                                    </td>
-                                    <td>{{$titular->puertaPersonalizada?->tipo_via}}</td>
-                                    <td>{{$titular->puertaPersonalizada?->nomb_via}}</td>
-                                    <td>{{$titular->puertaPersonalizada?->nume_muni}}</td>
-                                    <td>{{$titular->tipo_interior}}</td>
-                                    <td>{{$titular->nume_interior}}</td>
-                                    <td>{{$titular->lote->manzana->codi_mzna}}</td>
-                                    <td>{{$titular->lote->codi_lote}}</td>
-                                    <td>{{$titular->lote?->hab_urbana?->nomb_hab_urba}}</td>
-                                    <td>{{$titular->area_seleccionada}}</td>
-                                    <td>{{$titular->total_construcciones}}</td>
-                                    <td>{{$titular->usoUniCat()?->desc_uso}}</td>
+                                    <td>{{ $titular->cuc_lote }}</td>
+                                    <td>{{ $titular->cuc_ficha }}</td>
+
+                                    <td>{!! nl2br(e($titular->titulares_nombres)) !!}</td>
+                                    <td>{!! nl2br(e($titular->titulares_porcentajes)) !!}</td>
+                                    <td>{!! nl2br(e($titular->titulares_documentos)) !!}</td>
+
+                                    <td>{{ $titular->tipo_via }}</td>
+                                    <td>{{ $titular->nomb_via }}</td>
+                                    <td>{{ $titular->nume_muni }}</td>
+
+                                    <td>{{ $titular->tipo_interior }}</td>
+                                    <td>{{ $titular->nume_interior }}</td>
+
+                                    <td>{{ $titular->codi_mzna }}</td>
+                                    <td>{{ $titular->codi_lote }}</td>
+                                    <td>{{ $titular->nomb_hab_urba }}</td>
+
+                                    <td>{{ $titular->area_seleccionada }}</td>
+                                    <td>{{ $titular->total_construcciones }}</td>
+                                    <td>{{ $titular->desc_uso }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
