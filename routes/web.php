@@ -76,7 +76,7 @@ Route::group(['middleware'=>['auth']], function () {
     Route::get('pdf/certificadocatastral/{ficha}', 'App\Http\Controllers\FichaController@certificadocatastral')->name('pdf.certificadocatastral');
     Route::get('pdf/gerenciaadministracion/{ficha}', 'App\Http\Controllers\FichaController@gerenciaadministracion')->name('pdf.gerenciaadministracion');
     Route::get('pdf/informeeconomico/{ficha}', 'App\Http\Controllers\FichaController@informeeconomico')->name('pdf.informeeconomico');
-    Route::get('pdf/anexoficha/{sector}', 'App\Http\Controllers\FichaController@c')->name('pdf.anexoficha');
+    Route::get('pdf/anexoficha/{sector}', 'App\Http\Controllers\FichaController@anexoficha')->name('pdf.anexoficha');
     Route::get('excel/anexoficha/{ficha}', 'App\Http\Controllers\FichaController@anexofichaexcel')->name('excel.anexoficha');
 
 
