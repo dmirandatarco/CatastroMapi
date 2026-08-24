@@ -460,8 +460,8 @@
             @php
                 $host = request()->getHost();
 
-                $isLocal = in_array($host, ['localhost', '192.168.1.16']);
-                $mapsUrl = $isLocal ? 'http://192.168.1.16:81' : 'http://209.45.78.210:9101';
+                $isLocal = in_array($host, ['localhost', '192.168.50.7']);
+                $mapsUrl = $isLocal ? 'http://192.168.50.7/visor' : 'http://192.168.50.7/visor';
             @endphp
 
             <li class="nav-item">

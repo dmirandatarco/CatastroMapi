@@ -705,14 +705,14 @@
         <div style="width: 237px;height: 16px;float:left;">
             <div class="texto fz10 lh14">
                 @if ($ficha?->fichaindividual != '')
-                    {{ $ficha?->fichaindividual?->area_declarada }}
+                    {{ $ficha?->fichaindividual?->area_verificada }}
                 @endif
             </div>
         </div>
         <div style="width: 237.9px;height: 16px;float:left;">
             <div class="texto fz10 lh14" class="texto2 fz8 lh14">
                 @if ($ficha?->fichaindividual != '')
-                    {{ $ficha?->fichaindividual?->area_verificada }}
+                    {{ $ficha?->construccions?->sum('area_verificada') }}
                 @endif
             </div>
         </div>
