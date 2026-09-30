@@ -1,4 +1,6 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head><body>
+@foreach($paginasCoordenadas as $indiceHoja => $filasCoordenadas)
+@if($indiceHoja > 0)<pagebreak />@endif
 @include('pages.pdf.certificados.estilos')
 <hr>
 <div class="titulo" style="font-size:13pt">CERTIFICADO NEGATIVO CATASTRAL Nº {{ $datos['numero'] }}</div>
@@ -38,14 +40,8 @@
         </table>
         @if(empty($datos['coordenadas']))<div class="centro small">{{ $datos['sistema_coordenadas'] }}</div>@endif
         <div class="centro"><img src="{{ public_path('img/certificados/leyenda.png') }}" style="width:54mm"></div>
-        @if(!empty($datos['coordenadas']))
-            <table class="borde small" style="font-size:6.5pt">
-                <tr><th colspan="6">CUADRO DE COORDENADAS {{ $datos['sistema_coordenadas'] }}</th></tr>
-                <tr><th>VÉRTICE</th><th>LADO</th><th>DIST.</th><th>ÁNGULO</th><th>ESTE</th><th>NORTE</th></tr>
-                @foreach(preg_split('/\r\n|\r|\n/', trim($datos['coordenadas'])) as $fila)
-                    <tr>@foreach(explode('|', $fila) as $celda)<td>{{ trim($celda) }}</td>@endforeach</tr>
-                @endforeach
-            </table>
+        @if($filasCoordenadas)
+            @include('pages.pdf.certificados.cuadro-coordenadas', ['filas' => $filasCoordenadas, 'hoja' => $indiceHoja + 1, 'totalHojas' => count($paginasCoordenadas)])
         @endif
     </td>
 </tr></table>
@@ -53,4 +49,5 @@
 <p class="small"><b>RECIBO DE PAGO Nº {{ $datos['recibo'] }}</b> de fecha {{ \Carbon\Carbon::parse($datos['fecha_recibo'])->locale('es')->translatedFormat('d \d\e F \d\e Y') }}.</p>
 <table class="borde"><tr><th class="small">EL PRESENTE DOCUMENTO CERTIFICA LA EXISTENCIA Y CARACTERÍSTICAS FÍSICAS DEL PREDIO MAS NO ACREDITA, NI GENERA DERECHOS DE PROPIEDAD, NI SANEA LOS VICIOS QUE PUDIESE CONTENER LA DEFINICIÓN DE LOS LINDEROS DEL BIEN INMUEBLE.</th></tr></table>
 <p class="derecha" style="margin-top:3mm">Machupicchu, {{ \Carbon\Carbon::parse($datos['fecha'])->locale('es')->translatedFormat('d \d\e F \d\e Y') }}.</p>
+@endforeach
 </body></html>

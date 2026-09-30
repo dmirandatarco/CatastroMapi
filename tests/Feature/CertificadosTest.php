@@ -29,6 +29,7 @@ class CertificadosTest extends TestCase
         ]));
         Schema::create('tf_fichas', function (Blueprint $table) {
             $table->string('id_ficha')->primary();
+            $table->string('id_lote')->nullable();
             $table->string('id_uni_cat');
             $table->string('dc')->nullable();
         });
@@ -56,7 +57,7 @@ class CertificadosTest extends TestCase
 
     private function ficha(): Ficha
     {
-        DB::table('tf_fichas')->insert(['id_ficha' => 'F1', 'id_uni_cat' => 'U1']);
+        DB::table('tf_fichas')->insert(['id_ficha' => 'F1', 'id_uni_cat' => 'U1', 'id_lote' => '08130401023001']);
         DB::table('tf_fichas_individuales')->insert(['id_ficha' => 'F1', 'codi_uso' => '010101', 'imagen_lote' => 'foto.png', 'imagen_plano' => 'plano.png']);
         foreach (['imageneslotes/foto.png', 'imagenesplanos/plano.png'] as $path) {
             Storage::disk('local')->put('img/'.$path, file_get_contents(public_path('img/certificados/marca.png')));
@@ -324,6 +325,38 @@ class CertificadosTest extends TestCase
         $pdf = app(CertificadoPdf::class)->content($record);
         $this->assertSame(1, preg_match_all('/\/Type\s*\/Page\b/', $pdf));
         Storage::disk('local')->put('previews/catastral-con-servicio.pdf', $pdf);
+    }
+
+    public function test_guarda_certificado_aunque_pgsqlgeo_rechace_conexion(): void
+    {
+        config(['cache.default' => 'array']);
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->app->forgetInstance(\App\Services\Certificados\UbicacionPredioService::class);
+        $this->mock(\App\Services\Certificados\DatosGeograficos::class, fn ($mock) => $mock->shouldReceive('lote')->andThrow(new \PDOException('Connection refused')));
+        $automaticos = $this->datos('catastral');
+        $this->mock(\App\Services\Certificados\DatosCatastrales::class, fn ($mock) => $mock->shouldReceive('desdeFicha')->andReturn($automaticos));
+        $record = app(EmisionCertificadoService::class)->emit($this->ficha(), 'catastral', $automaticos, 1);
+        $this->assertTrue($record->exists);
+        $this->assertSame('01-2026-UCDUR-MDM', $record->numero_documento);
+        $this->assertArrayNotHasKey('plano', $record->documento['imagenes']);
+        $this->assertNotEmpty($record->fresh()->documento['geografia']['advertencias']);
+    }
+
+    public function test_repite_certificado_completo_cada_diez_coordenadas(): void
+    {
+        $path = 'certificados/00000000-0000-4000-8000-000000000001.png';
+        Storage::disk('local')->put($path, file_get_contents(public_path('img/certificados/marca.png')));
+        foreach ([0 => 1, 8 => 1, 10 => 1, 11 => 2, 20 => 2, 25 => 3, 70 => 7] as $cantidad => $paginas) {
+            $datos = $this->datos('catastral');
+            $datos['coordenadas'] = $cantidad ? implode("\n", array_map(fn ($i) => "P$i | P$i-P".($i === $cantidad ? 1 : $i + 1)." | 1.46 | 179°59'59 | 768533.990 | 8544609.482", range(1, $cantidad))) : '';
+            $record = (new \App\Models\GenerarCertificado)->forceFill([
+                'numero_documento' => $datos['numero'],
+                'documento' => ['version' => 1, 'tipo' => 'catastral', 'datos' => $datos, 'imagenes' => ['foto' => $path, 'plano' => $path]],
+            ]);
+            $pdf = app(CertificadoPdf::class)->content($record);
+            Storage::disk('local')->put("previews/coordenadas-$cantidad.pdf", $pdf);
+            $this->assertSame($paginas, preg_match_all('/\/Type\s*\/Page\b/', $pdf), "Coordenadas: $cantidad");
+        }
     }
 
 }

@@ -72,6 +72,7 @@
     <script src="{{ asset('assets/js/template.js') }}"></script>
     <!-- end common js -->
 
+    <script src="{{ asset('js/ficha-search.js') }}"></script>
     @stack('custom-scripts')
 
 </body>

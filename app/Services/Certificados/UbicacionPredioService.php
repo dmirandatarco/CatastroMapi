@@ -3,7 +3,7 @@
 namespace App\Services\Certificados;
 
 use App\Models\Ficha;
-use Illuminate\Database\QueryException;
+use PDOException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -51,7 +51,7 @@ class UbicacionPredioService
             $resultado['png'] = $this->imagen($idLote, $lote['bbox'], $capas);
         } catch (UbicacionNoDisponible $error) {
             $resultado['advertencias'][] = $error->getMessage();
-        } catch (QueryException $error) {
+        } catch (PDOException $error) {
             $resultado['advertencias'][] = $tipo === 'numeracion'
                 ? 'No se pudo consultar pgsqlgeo. Verifica la conexión y la función geo.fg_obtener_bbox_lote.'
                 : 'No se pudo consultar pgsqlgeo. Verifica la conexión y las funciones geo.fg_obtener_bbox_lote y geo.fg_obtener_cuadro_coordenadas_lote.';
@@ -71,7 +71,7 @@ class UbicacionPredioService
         }
         try {
             $puerta = $this->geografia->puerta($idLote, (string) $puertas[0]);
-        } catch (QueryException $error) {
+        } catch (PDOException $error) {
             $puerta = null;
         }
         if (!$puerta || (int) $puerta['srid'] !== (int) config('certificados.ubicacion.srid') || !is_numeric($puerta['este']) || !is_numeric($puerta['norte'])) {

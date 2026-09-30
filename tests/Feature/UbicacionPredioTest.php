@@ -175,4 +175,13 @@ class UbicacionPredioTest extends TestCase
         }
     }
 
+    public function test_conexion_geografica_rechazada_no_bloquea_emision(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andThrow(new \PDOException('Connection refused'));
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertNotEmpty($resultado['advertencias']);
+        Http::assertNothingSent();
+    }
+
 }

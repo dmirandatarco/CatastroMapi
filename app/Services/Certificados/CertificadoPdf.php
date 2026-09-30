@@ -8,6 +8,8 @@ use Mpdf\Mpdf;
 
 class CertificadoPdf
 {
+    private const FILAS_POR_HOJA = 10;
+
     public function content(Model $certificado): string
     {
         $documento = $certificado->documento;
@@ -32,7 +34,12 @@ class CertificadoPdf
         $pdf->watermarkImgBehind = true;
         $pdf->showWatermarkImage = true;
         $pdf->SetHTMLFooter('<img src="'.public_path('img/certificados/'.$pie).'" style="width:174mm;">');
-        $pdf->WriteHTML(view('pages.pdf.certificados.'.$tipo, ['datos' => $documento['datos'], 'imagenes' => $imagenes, 'tipo' => $tipo])->render());
+        $filas = preg_split('/\r\n|\r|\n/', trim($documento['datos']['coordenadas'] ?? ''), -1, PREG_SPLIT_NO_EMPTY);
+        $paginasCoordenadas = array_chunk($filas, self::FILAS_POR_HOJA) ?: [[]];
+        $pdf->WriteHTML(view('pages.pdf.certificados.'.$tipo, [
+            'datos' => $documento['datos'], 'imagenes' => $imagenes, 'tipo' => $tipo,
+            'paginasCoordenadas' => $paginasCoordenadas,
+        ])->render());
         return $pdf->Output('', 'S');
     }
 
