@@ -32,17 +32,36 @@ class DatosGeograficos
         });
     }
 
-    public function puerta(string $idLote, string $idPuerta): ?array
+    public function puerta(string $idLote, string $numeroMunicipal): ?array
     {
-        return DB::connection('pgsqlgeo')->transaction(function ($connection) use ($idLote, $idPuerta) {
+        return DB::connection('pgsqlgeo')->transaction(function ($connection) use ($idLote, $numeroMunicipal) {
             $connection->statement("SET LOCAL statement_timeout = '5000ms'");
+            // La vista relaciona los dos sistemas; sus identificadores de puerta son distintos.
+            $puertas = $connection->select(
+                'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+                ['lote' => $idLote]
+            );
+            $numero = mb_strtoupper(trim($numeroMunicipal));
+            $coincidentes = array_values(array_filter($puertas, fn ($puerta) =>
+                $numero !== '' && mb_strtoupper(trim((string) $puerta->nume_muni)) === $numero
+            ));
+            if (count($coincidentes) !== 1) {
+                throw new UbicacionNoDisponible('No se pudo identificar una única puerta geográfica con el número municipal registrado en la puerta principal de la ficha. Revisa geo.v_numeracion_puerta; las coordenadas quedan pendientes.');
+            }
+            $idPuerta = (string) $coincidentes[0]->id_puerta;
             $filas = $connection->select(
-                'SELECT ST_SRID(geom) AS srid, ROUND(ST_X(geom)::numeric, 2) AS este, ROUND(ST_Y(geom)::numeric, 2) AS norte
+                'SELECT ST_SRID(geom) AS srid
                  FROM geo.tg_puerta WHERE id_lote = :lote AND id_puerta = :puerta AND geom IS NOT NULL',
                 ['lote' => $idLote, 'puerta' => $idPuerta]
             );
+            if (count($filas) !== 1 || (int) $filas[0]->srid !== (int) config('certificados.ubicacion.srid')) {
+                return null;
+            }
+            $coordenadas = $connection->select(
+                'SELECT * FROM geo.fg_obtener_coordenadas_utm(:puerta)', ['puerta' => $idPuerta]
+            );
 
-            return count($filas) === 1 ? (array) $filas[0] : null;
+            return count($coordenadas) === 1 ? array_merge((array) $coordenadas[0], ['srid' => $filas[0]->srid]) : null;
         });
     }
 }

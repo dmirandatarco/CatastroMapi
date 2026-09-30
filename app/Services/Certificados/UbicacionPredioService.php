@@ -27,9 +27,11 @@ class UbicacionPredioService
         if ($tipo === 'numeracion') {
             $ficha->loadMissing('puertas');
             $puertas = $ficha->puertas->filter(fn ($puerta) => strtoupper(trim((string) $puerta->tipo_puerta)) === 'P')
-                ->pluck('id_puerta')->unique()->sort()->values()->all();
+                ->unique('id_puerta')->sortBy('id_puerta')->map(fn ($puerta) => [
+                    'id' => (string) $puerta->id_puerta, 'numero' => (string) $puerta->nume_muni,
+                ])->values()->all();
         }
-        $clave = 'certificados:ubicacion:v2:'.hash('sha256', json_encode([
+        $clave = 'certificados:ubicacion:v3:'.hash('sha256', json_encode([
             $idLote, $tipo, $capas, $puertas, config('certificados.ubicacion'),
             config('database.connections.pgsqlgeo.host'), config('database.connections.pgsqlgeo.database'),
             config('database.connections.pgsqlgeo.port'), config('database.connections.pgsqlgeo.search_path'),
@@ -70,11 +72,15 @@ class UbicacionPredioService
             return;
         }
         try {
-            $puerta = $this->geografia->puerta($idLote, (string) $puertas[0]);
+            $puerta = $this->geografia->puerta($idLote, $puertas[0]['numero']);
+        } catch (UbicacionNoDisponible $error) {
+            $resultado['advertencias'][] = $error->getMessage();
+            return;
         } catch (PDOException $error) {
-            $puerta = null;
+            $resultado['advertencias'][] = 'No se pudieron consultar las coordenadas de la puerta en pgsqlgeo. Verifica geo.v_numeracion_puerta y geo.fg_obtener_coordenadas_utm.';
+            return;
         }
-        if (!$puerta || (int) $puerta['srid'] !== (int) config('certificados.ubicacion.srid') || !is_numeric($puerta['este']) || !is_numeric($puerta['norte'])) {
+        if (!$puerta || (int) ($puerta['srid'] ?? 0) !== (int) config('certificados.ubicacion.srid') || !is_numeric($puerta['este'] ?? null) || !is_numeric($puerta['norte'] ?? null)) {
             $resultado['advertencias'][] = 'No se encontró la geometría de la puerta principal en UTM 18S. Sus coordenadas quedan pendientes.';
             return;
         }
@@ -134,11 +140,46 @@ class UbicacionPredioService
                 'format' => 'image/png', 'id' => $idLote,
             ]);
         $png = $response->body();
+        $errorWms = $this->errorWms($png);
+        if ($errorWms !== null) {
+            throw new UbicacionNoDisponible('El WMS rechazó el plano: '.$errorWms);
+        }
+        if (!$response->successful()) {
+            throw new UbicacionNoDisponible('El WMS respondió con HTTP '.$response->status().'. Revisa URL_MAP y el servicio de mapas.');
+        }
         $imagen = strlen($png) <= 8 * 1024 * 1024 ? @getimagesizefromstring($png) : false;
-        if (!$response->successful() || !$imagen || $imagen['mime'] !== 'image/png' || $imagen[0] !== $width || $imagen[1] !== $height) {
-            throw new UbicacionNoDisponible('El WMS no devolvió un plano PNG válido del tamaño solicitado. El plano queda pendiente.');
+        if (!$imagen || $imagen['mime'] !== 'image/png') {
+            throw new UbicacionNoDisponible('El WMS no devolvió una imagen PNG válida de hasta 8 MB. Revisa URL_MAP y el servicio de mapas.');
+        }
+        if ($imagen[0] !== $width || $imagen[1] !== $height) {
+            throw new UbicacionNoDisponible("El WMS devolvió una imagen de {$imagen[0]} × {$imagen[1]} píxeles; se solicitaron {$width} × {$height}. El plano queda pendiente.");
         }
 
         return $png;
+    }
+
+    private function errorWms(string $contenido): ?string
+    {
+        if (strlen($contenido) > 65536 || !str_starts_with(ltrim($contenido), '<')) {
+            return null;
+        }
+        $anterior = libxml_use_internal_errors(true);
+        try {
+            // No cargar DTD ni sustituir entidades de una respuesta externa.
+            $xml = simplexml_load_string($contenido, \SimpleXMLElement::class, LIBXML_NONET);
+            if ($xml === false) {
+                return null;
+            }
+            $errores = $xml->xpath('//*[local-name()="ServiceException" or local-name()="ExceptionText"]');
+            if (!$errores) {
+                return null;
+            }
+            $mensaje = trim(preg_replace('/\s+/u', ' ', (string) $errores[0]) ?? '');
+
+            return $mensaje !== '' ? mb_substr($mensaje, 0, 350) : 'El servidor reportó una excepción sin detalle.';
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($anterior);
+        }
     }
 }

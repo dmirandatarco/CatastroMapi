@@ -73,9 +73,9 @@ class UbicacionPredioTest extends TestCase
         $geo = $this->mock(DatosGeograficos::class);
         $lote = $this->lote(); $lote['filas'] = [];
         $geo->shouldReceive('lote')->once()->with('08130401023001', false)->andReturn($lote);
-        $geo->shouldReceive('puerta')->once()->with('08130401023001', 'P123')->andReturn(['srid' => 32718, 'este' => 768400.25, 'norte' => 8544500.75]);
+        $geo->shouldReceive('puerta')->once()->with('08130401023001', '123')->andReturn(['srid' => 32718, 'este' => 768400.25, 'norte' => 8544500.75]);
         Http::fake(['*' => Http::response($this->png())]);
-        $ficha = $this->ficha([(new Puerta)->forceFill(['id_puerta' => 'P123', 'tipo_puerta' => 'P']), (new Puerta)->forceFill(['id_puerta' => 'S456', 'tipo_puerta' => 'S'])]);
+        $ficha = $this->ficha([(new Puerta)->forceFill(['id_puerta' => 'P123', 'tipo_puerta' => 'P', 'nume_muni' => '123']), (new Puerta)->forceFill(['id_puerta' => 'S456', 'tipo_puerta' => 'S'])]);
         $resultado = app(UbicacionPredioService::class)->obtener($ficha, 'numeracion');
         $this->assertSame(['este' => '768400.25', 'norte' => '8544500.75'], $resultado['datos']);
         $this->assertSame([], $resultado['advertencias']);
@@ -98,6 +98,79 @@ class UbicacionPredioTest extends TestCase
         $this->assertSame([], $resultado['datos']);
         $this->assertNotNull($resultado['png']);
         $this->assertCount(1, $resultado['advertencias']);
+    }
+
+    public function test_coordenadas_usan_identificador_gis_resuelto_por_la_vista(): void
+    {
+        $conexion = \Mockery::mock(\Illuminate\Database\Connection::class);
+        \Illuminate\Support\Facades\DB::shouldReceive('connection')->with('pgsqlgeo')->andReturn($conexion);
+        $conexion->shouldReceive('transaction')->andReturnUsing(fn ($consulta) => $consulta($conexion));
+        $conexion->shouldReceive('statement')->with("SET LOCAL statement_timeout = '5000ms'")->andReturn(true);
+        $conexion->shouldReceive('select')->once()->with(
+            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+            ['lote' => '08130401023001']
+        )->andReturn([(object) ['id_puerta' => '0813040102300101', 'nume_muni' => ' S/N '],
+            (object) ['id_puerta' => '0813040102300102', 'nume_muni' => '123']]);
+        $conexion->shouldReceive('select')->once()->with(\Mockery::on(fn ($sql) => str_contains($sql, 'ST_SRID(geom)')),
+            ['lote' => '08130401023001', 'puerta' => '0813040102300101']
+        )->andReturn([(object) ['srid' => 32718]]);
+        $conexion->shouldReceive('select')->once()->with(
+            'SELECT * FROM geo.fg_obtener_coordenadas_utm(:puerta)', ['puerta' => '0813040102300101']
+        )->andReturn([(object) ['este' => 768338.3259, 'norte' => 8544418.8257]]);
+        $this->assertSame(['este' => 768338.3259, 'norte' => 8544418.8257, 'srid' => 32718],
+            (new DatosGeograficos)->puerta('08130401023001', 's/n'));
+    }
+
+    /** @dataProvider numerosSinCorrespondenciaUnica */
+    public function test_no_elige_puerta_gis_si_el_numero_no_la_identifica(string $numero, array $numeros): void
+    {
+        $conexion = \Mockery::mock(\Illuminate\Database\Connection::class);
+        \Illuminate\Support\Facades\DB::shouldReceive('connection')->with('pgsqlgeo')->andReturn($conexion);
+        $conexion->shouldReceive('transaction')->andReturnUsing(fn ($consulta) => $consulta($conexion));
+        $conexion->shouldReceive('statement')->andReturn(true);
+        $conexion->shouldReceive('select')->once()->with(
+            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+            ['lote' => '08130401023001']
+        )->andReturn(array_map(fn ($valor) => (object) ['id_puerta' => 'gis', 'nume_muni' => $valor], $numeros));
+        $this->expectException(UbicacionNoDisponible::class);
+        (new DatosGeograficos)->puerta('08130401023001', $numero);
+    }
+
+    public static function numerosSinCorrespondenciaUnica(): array
+    {
+        return [['S/N', ['S/N', 'S/N']], ['123', ['456']], ['', [null]], ['123', []]];
+    }
+
+    public function test_error_de_puerta_no_impide_obtener_el_plano(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $geo->shouldReceive('lote')->andReturn($this->lote());
+        $geo->shouldReceive('puerta')->andThrow(new UbicacionNoDisponible('Puerta ambigua.'));
+        Http::fake(['*' => Http::response($this->png())]);
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha([
+            (new Puerta)->forceFill(['id_puerta' => 'catastro', 'tipo_puerta' => 'P', 'nume_muni' => 'S/N']),
+        ]), 'numeracion');
+        $this->assertNotNull($resultado['png']);
+        $this->assertSame(['Puerta ambigua.'], $resultado['advertencias']);
+        $this->assertSame([], $resultado['datos']);
+    }
+
+    public function test_muestra_error_bbox_reportado_por_mapserver(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andReturn($this->lote());
+        Http::fake(['*' => Http::response('<?xml version="1.0"?><!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd"><ServiceExceptionReport><ServiceException>msWMSLoadGetMapParams(): WMS server error. Invalid values for BBOX.</ServiceException></ServiceExceptionReport>', 400)]);
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertStringContainsString('Invalid values for BBOX.', $resultado['advertencias'][0]);
+    }
+
+    public function test_muestra_estado_http_si_url_no_es_servicio_wms(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andReturn($this->lote());
+        Http::fake(['*' => Http::response('Not found', 404)]);
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertStringContainsString('HTTP 404', $resultado['advertencias'][0]);
     }
 
     public function test_rechaza_xml_de_error_del_wms_y_conserva_el_cuadro_disponible(): void
