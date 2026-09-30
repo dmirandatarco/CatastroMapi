@@ -100,9 +100,11 @@ Route::group(['middleware'=>['auth']], function () {
     Route::get('/ficha/generarnumeracioncreate/{fichaanterior}', 'App\Http\Controllers\GenerarNumeracionController@generarnumeracioncreate')->name('ficha.generarnumeracioncreate');
 
 
-    Route::get('/generarcatastral/indexgenerarcatastral', 'App\Http\Controllers\GenerarcertificadoController@indexgenerarcatastral')->name('generarcatastral.indexgenerarcatastral');
-    Route::get('/generarcatastral/reportegenerarcatastral', 'App\Http\Controllers\GenerarcertificadoController@reportegenerarcatastral')->name('generarcatastral.reportegenerarcatastral');
-    Route::get('/ficha/generarcatastralcreate/{fichaanterior}', 'App\Http\Controllers\GenerarcertificadoController@generarcatastralcreate')->name('ficha.generarcatastralcreate');
+    Route::get('/certificados/plano/{ficha}/{tipo}', [\App\Http\Controllers\GenerarCertificadoController::class, 'plano'])->name('certificados.plano');
+    Route::get('/generarcatastral/indexgenerarcatastral', 'App\Http\Controllers\GenerarCertificadoController@indexgenerarcatastral')->name('generarcatastral.indexgenerarcatastral');
+    Route::get('/generarcatastral/reportegenerarcatastral', 'App\Http\Controllers\GenerarCertificadoController@reportegenerarcatastral')->name('generarcatastral.reportegenerarcatastral');
+    Route::get('/ficha/generarcatastralcreate/{fichaanterior}', 'App\Http\Controllers\GenerarCertificadoController@generarcatastralcreate')->name('ficha.generarcatastralcreate');
+    Route::get('/certificados/catastral/{ficha}/imagen/{tipo}', 'App\Http\Controllers\GenerarCertificadoController@imagen')->name('certificados.catastral.imagen');
 
 
 

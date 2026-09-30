@@ -233,6 +233,12 @@ class Ficha  extends Authenticatable implements AuditableContract
         return $this->belongsTo('App\Models\FichaCotitularidad', 'id_ficha', 'id_ficha');
     }
 
+    public function cotitularesRelacionados()
+    {
+        return $this->hasMany(self::class, 'id_uni_cat', 'id_uni_cat')
+            ->where('tipo_ficha', '02')->where('activo', 1)->orderBy('id_ficha');
+    }
+
     public function conductor()
     {
         return $this->belongsTo('App\Models\Conductor', 'id_ficha', 'id_ficha');

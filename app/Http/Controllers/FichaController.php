@@ -1006,6 +1006,9 @@ public function fichaCotitularidad(Ficha $ficha)
 
     public function fichaNumeracion(GenerarNumeracion $ficha)
     {
+        if ($ficha->documento) {
+            return app(\App\Services\Certificados\CertificadoPdf::class)->response($ficha);
+        }
         $mytime = Carbon::now('America/Lima');
         $fileName = 'numeracion.pdf';
         $usos = Uso::orderBy('codi_uso')->get();
@@ -1032,6 +1035,9 @@ public function fichaCotitularidad(Ficha $ficha)
 
     public function certificadocatastral(GenerarCertificado $ficha)
     {
+        if ($ficha->documento) {
+            return app(\App\Services\Certificados\CertificadoPdf::class)->response($ficha);
+        }
         ini_set('pcre.backtrack_limit', '10000000');
         ini_set('pcre.recursion_limit', '1000000');
         $mytime = Carbon::now('America/Lima');

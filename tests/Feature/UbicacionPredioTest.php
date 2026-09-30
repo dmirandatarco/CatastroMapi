@@ -1,0 +1,178 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Ficha;
+use App\Models\Puerta;
+use App\Services\Certificados\DatosGeograficos;
+use App\Services\Certificados\UbicacionNoDisponible;
+use App\Services\Certificados\UbicacionPredioService;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
+
+class UbicacionPredioTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['cache.default' => 'array', 'certificados.ubicacion.url' => 'http://mapas.local:81', 'certificados.ubicacion.srid' => 32718]);
+        Cache::flush();
+        Http::preventStrayRequests();
+    }
+
+    private function ficha(array $puertas = []): Ficha
+    {
+        return (new Ficha)->forceFill(['id_lote' => '08130401023001'])->setRelation('puertas', new Collection($puertas));
+    }
+
+    private function lote(): array
+    {
+        return ['bbox' => ['minx' => 768510, 'miny' => 8544600, 'maxx' => 768540, 'maxy' => 8544620, 'width' => 900, 'height' => 600],
+            'filas' => [
+                ['vertice' => 'P1', 'lado' => 'P1 - P2', 'distancia' => 3.2, 'angulo' => '90°0\'0"', 'este' => '768541.023', 'norte' => '8544614.943'],
+                ['vertice' => 'P2', 'lado' => 'P2 - P1', 'distancia' => 3.2, 'angulo' => '90°0\'0"', 'este' => '768543.023', 'norte' => '8544616.943'],
+            ]];
+    }
+
+    private function png(): string
+    {
+        $imagen = imagecreatetruecolor(900, 600);
+        ob_start(); imagepng($imagen); $png = ob_get_clean(); imagedestroy($imagen);
+        return $png;
+    }
+
+    public function test_pide_capas_bbox_y_tamano_documentados_a_url_configurada_y_conserva_orden_de_vertices(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $geo->shouldReceive('lote')->once()->with('08130401023001', true)->andReturn($this->lote());
+        $png = $this->png();
+        Http::fake(['mapas.local:81/*' => Http::response($png, 200, ['Content-Type' => 'image/png'])]);
+        $service = app(UbicacionPredioService::class);
+        $resultado = $service->obtener($this->ficha());
+        $this->assertSame($png, $resultado['png']);
+        $this->assertSame([], $resultado['advertencias']);
+        $this->assertStringStartsWith('P1 | P1 - P2 | 3.20 |', $resultado['datos']['coordenadas']);
+        $this->assertStringContainsString('768541.023 | 8544614.943', $resultado['datos']['coordenadas']);
+        Http::assertSent(function ($request) {
+            parse_str(parse_url($request->url(), PHP_URL_QUERY), $params);
+            return str_starts_with($request->url(), 'http://mapas.local:81/servicio/wms?')
+                && $params['layers'] === UbicacionPredioService::CAPAS
+                && $params['styles'] === '' && $params['WIDTH'] === '900' && $params['HEIGHT'] === '600'
+                && $params['BBOX'] === '768510,8544600,768540,8544620'
+                && $params['SRS'] === 'EPSG:32718' && $params['id'] === '08130401023001';
+        });
+        $this->assertSame($resultado, $service->obtener($this->ficha()));
+        Http::assertSentCount(1);
+    }
+
+    public function test_numeracion_usa_punto_de_puerta_principal_y_no_vertices_del_lote(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $lote = $this->lote(); $lote['filas'] = [];
+        $geo->shouldReceive('lote')->once()->with('08130401023001', false)->andReturn($lote);
+        $geo->shouldReceive('puerta')->once()->with('08130401023001', 'P123')->andReturn(['srid' => 32718, 'este' => 768400.25, 'norte' => 8544500.75]);
+        Http::fake(['*' => Http::response($this->png())]);
+        $ficha = $this->ficha([(new Puerta)->forceFill(['id_puerta' => 'P123', 'tipo_puerta' => 'P']), (new Puerta)->forceFill(['id_puerta' => 'S456', 'tipo_puerta' => 'S'])]);
+        $resultado = app(UbicacionPredioService::class)->obtener($ficha, 'numeracion');
+        $this->assertSame(['este' => '768400.25', 'norte' => '8544500.75'], $resultado['datos']);
+        $this->assertSame([], $resultado['advertencias']);
+        Http::assertSent(function ($request) {
+            parse_str(parse_url($request->url(), PHP_URL_QUERY), $params);
+            return $params['layers'] === 'etiqueta_lote,nivel_construccion_lote,id_lote,numeracion_puerta'
+                && $params['SRS'] === 'EPSG:32718' && $params['id'] === '08130401023001'
+                && !isset($params['numero_municipal']);
+        });
+    }
+
+    public function test_no_inventa_punto_cuando_hay_varias_puertas_principales(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $geo->shouldReceive('lote')->andReturn($this->lote());
+        $geo->shouldNotReceive('puerta');
+        Http::fake(['*' => Http::response($this->png())]);
+        $ficha = $this->ficha([(new Puerta)->forceFill(['id_puerta' => 'P1', 'tipo_puerta' => 'P']), (new Puerta)->forceFill(['id_puerta' => 'P2', 'tipo_puerta' => 'P'])]);
+        $resultado = app(UbicacionPredioService::class)->obtener($ficha, 'numeracion');
+        $this->assertSame([], $resultado['datos']);
+        $this->assertNotNull($resultado['png']);
+        $this->assertCount(1, $resultado['advertencias']);
+    }
+
+    public function test_rechaza_xml_de_error_del_wms_y_conserva_el_cuadro_disponible(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andReturn($this->lote());
+        Http::fake(['*' => Http::response('<ServiceException>Layer not found</ServiceException>', 200)]);
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertNotEmpty($resultado['datos']['coordenadas']);
+        $this->assertCount(1, $resultado['advertencias']);
+    }
+
+    public function test_timeout_no_impide_continuar_sin_plano(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andReturn($this->lote());
+        Http::fake(fn () => throw new ConnectionException('Timeout'));
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertStringContainsString('no respondió', $resultado['advertencias'][0]);
+    }
+
+    public function test_no_pide_imagen_si_la_zona_no_coincide(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andThrow(new UbicacionNoDisponible('Zona UTM incorrecta.'));
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertSame([], $resultado['datos']);
+        Http::assertNothingSent();
+    }
+
+    public function test_rechaza_bbox_deformado_sin_hacer_peticion(): void
+    {
+        $lote = $this->lote(); $lote['bbox']['height'] = 900;
+        $this->mock(DatosGeograficos::class)->shouldReceive('lote')->andReturn($lote);
+        $resultado = app(UbicacionPredioService::class)->obtener($this->ficha());
+        $this->assertNull($resultado['png']);
+        $this->assertStringContainsString('proporción', $resultado['advertencias'][0]);
+        Http::assertNothingSent();
+    }
+    public function test_numeracion_no_consulta_funcion_de_vertices_en_pgsqlgeo(): void
+    {
+        $conexion = \Mockery::mock(\Illuminate\Database\Connection::class);
+        \Illuminate\Support\Facades\DB::shouldReceive('connection')->once()->with('pgsqlgeo')->andReturn($conexion);
+        $conexion->shouldReceive('transaction')->once()->andReturnUsing(fn ($consulta) => $consulta($conexion));
+        $conexion->shouldReceive('statement')->once()->with("SET LOCAL statement_timeout = '5000ms'")->andReturn(true);
+        $conexion->shouldReceive('select')->once()->with(
+            'SELECT ST_SRID(geom) AS srid FROM geo.tg_lote WHERE id_lote = :id AND geom IS NOT NULL',
+            ['id' => '08130401023001']
+        )->andReturn([(object) ['srid' => 32718]]);
+        $conexion->shouldReceive('select')->once()->with(
+            'SELECT * FROM geo.fg_obtener_bbox_lote(:id)', ['id' => '08130401023001']
+        )->andReturn([(object) $this->lote()['bbox']]);
+        $resultado = (new DatosGeograficos)->lote('08130401023001', false);
+        $this->assertSame($this->lote()['bbox'], $resultado['bbox']);
+        $this->assertSame([], $resultado['filas']);
+    }
+
+    public function test_cache_separa_plano_catastral_y_plano_de_numeracion(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $geo->shouldReceive('lote')->once()->with('08130401023001', true)->andReturn($this->lote());
+        $geo->shouldReceive('lote')->once()->with('08130401023001', false)->andReturn($this->lote());
+        $png = $this->png();
+        Http::fake(['*' => Http::response($png)]);
+        $service = app(UbicacionPredioService::class);
+        $service->obtener($this->ficha(), 'catastral');
+        $service->obtener($this->ficha(), 'numeracion');
+        $service->obtener($this->ficha(), 'numeracion');
+        Http::assertSentCount(2);
+        foreach ([UbicacionPredioService::CAPAS, UbicacionPredioService::CAPAS_NUMERACION] as $capas) {
+            Http::assertSent(function ($request) use ($capas) {
+                parse_str(parse_url($request->url(), PHP_URL_QUERY), $params);
+                return $params['layers'] === $capas;
+            });
+        }
+    }
+
+}

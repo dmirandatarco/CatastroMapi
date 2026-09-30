@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class GenerarCertificado extends Model
 {
     use HasFactory;
+    protected $casts = ['documento' => 'array'];
     protected $fillable =[
         'codi_construccion',
         'nume_piso',

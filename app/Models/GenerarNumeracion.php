@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class GenerarNumeracion extends Model
 {
     use HasFactory;
+    protected $casts = ['documento' => 'array'];
     protected $fillable = [
         'id_uni_cat',
         'dc',

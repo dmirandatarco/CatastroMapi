@@ -7,8 +7,9 @@
     <div class="col-md-12">
         <div class="card">
         <div class="card-body">
+            @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
             <div class="row">
-            <h4 class="mb-3">Crear Ficha Generar Certificado</h4>
+            <h4 class="mb-3">Historial de certificados</h4>
             {!!Form::open(array('url'=>'generarnumeracion/reportegenerarcertificado','method'=>'GET','autocomplete'=>'off','role'=>'search'))!!}
             <div class="form-group row">
                 <div class="col-md-1" style="padding-top: 10px">
@@ -51,7 +52,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Nº Ficha</th>
+                            <th>Certificado</th><th>Fecha de emisión</th>
                             <th>Sector</th>
                             <th>Manzana</th>
                             <th>Lote</th>
@@ -61,10 +62,10 @@
                     <tbody>
                         @foreach($fichasNumeracion as $ficha)
                             <tr>
-                                <td>{{$ficha->id}}</td>
-                                <td>{{$ficha->ficha->unicat->edificacion->lote->manzana->sectore->nomb_sector}}</td>
-                                <td>{{$ficha->ficha->unicat->edificacion->lote->manzana->nume_mzna}}</td>
-                                <td>{{$ficha->ficha->unicat->edificacion->lote->codi_lote}}</td>
+                                <td>{{ $ficha->numero_documento ?: $ficha->id }}</td><td>{{ $ficha->fecha_emision }}</td>
+                                <td>{{ data_get($ficha->documento, 'datos.sector') ?? $ficha->ficha?->lote?->manzana?->sectore?->nomb_sector }}</td>
+                                <td>{{ data_get($ficha->documento, 'datos.manzana') ?? $ficha->ficha?->lote?->manzana?->codi_mzna }}</td>
+                                <td>{{ data_get($ficha->documento, 'datos.lote') ?? $ficha->ficha?->lote?->codi_lote }}</td>
                                 <td>
                                     <a href="{{ route('pdf.numeracion',$ficha) }}">
                                         <button type="button" class="btn btn-success btn-icon " >
@@ -76,6 +77,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                {{ $fichasNumeracion->links() }}
             </div>
             </div>
         </div>
@@ -112,7 +114,7 @@
 
 var editar = document.getElementById('Agregar');
 
-editar.addEventListener('show.bs.modal', function (event) {
+editar?.addEventListener('show.bs.modal', function (event) {
 var button = event.relatedTarget
 
 var id = button.getAttribute('data-id')
