@@ -11,10 +11,11 @@ use App\Models\Ficha;
 
 class GenerarCertificadoController extends Controller
 {
-    public function plano(Ficha $ficha, string $tipo)
+    public function plano(Request $request, Ficha $ficha, string $tipo)
     {
         abort_unless(in_array($tipo, ['catastral', 'numeracion'], true), 404);
-        $resultado = app(\App\Services\Certificados\UbicacionPredioService::class)->obtener($ficha, $tipo);
+        $datos = $request->validate(['puerta' => 'nullable|string|max:100']);
+        $resultado = app(\App\Services\Certificados\UbicacionPredioService::class)->obtener($ficha, $tipo, $tipo === 'numeracion' ? ($datos['puerta'] ?? null) : null);
         abort_unless($resultado['png'] !== null, 404, 'Plano no disponible.');
         return response($resultado['png'], 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'private, max-age=60']);
     }

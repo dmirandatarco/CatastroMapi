@@ -37,7 +37,8 @@ class ImagenesController extends Controller
         }
 
         $ficha = Ficha::where('tipo_ficha', '=', '01')->orderby('id_lote', 'asc');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });

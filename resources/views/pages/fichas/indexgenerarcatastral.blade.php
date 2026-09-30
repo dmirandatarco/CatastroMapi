@@ -37,6 +37,7 @@
                     </select>
                     <br>
                 </div>
+                @include('partials.filtro-lote')
                 <div class="col-md-4">
                 </div>
                 <div class="col-md-1" style="padding-top: 10px">

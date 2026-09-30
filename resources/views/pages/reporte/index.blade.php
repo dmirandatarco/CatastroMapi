@@ -45,7 +45,8 @@
                         @endforeach
                     </select>
                     <br>
-                </div><div class="col-md-1" >
+                </div>
+                @include('partials.filtro-lote')<div class="col-md-1" >
                         <span> <strong> Cod. Ref. Catastral </strong></span>
                     <br>
                 </div>

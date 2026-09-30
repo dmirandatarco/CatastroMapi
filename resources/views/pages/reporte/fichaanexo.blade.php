@@ -39,6 +39,7 @@
                     </select>
                     <br>
                 </div>
+                @include('partials.filtro-lote')
 
 
 

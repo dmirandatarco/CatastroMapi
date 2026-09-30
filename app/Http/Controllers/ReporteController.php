@@ -63,8 +63,9 @@ class ReporteController extends Controller
         $cuc = $request->buscarcuc;
         $tipoficha = $request->buscarTipo;
         $ficha = Ficha::where('activo', 'LIKE', '%%')->orderBy('nume_ficha', 'asc');
+        \App\Services\FiltroLote::aplicar($ficha, $request);
 
-        if ($request->buscarSector != '0') {
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -172,7 +173,7 @@ class ReporteController extends Controller
         $ficha = $ficha->orderby('nume_ficha')->get();
         $numero = count($ficha);
         $total = 0;
-        if ($request->buscarSector == '' && $request->buscarManzana == '' && $request->buscarFicha == '' && $request->buscarTipo == '') {
+        if ($request->buscarSector == '' && $request->buscarManzana == '' && $request->buscarFicha == '' && $request->buscarTipo == '' && !$request->filled('buscarLote')) {
             $ficha = [];
         }
         return view('pages.reporte.index', compact('crc','cuc','sectores', 'manzanas', 'numero', 'ficha2', 'ficha', 'sector2', 'manzana2', 'tipoficha'));
@@ -185,15 +186,16 @@ class ReporteController extends Controller
         $sector2 = $request->buscarSector;
         $manzana2 = $request->buscarManzana;
         $tipoficha = $request->buscarTipo;
+        $lote = \App\Services\FiltroLote::numero($request);
         if ($request->buscarSector != 0 && $request->buscarManzana != 0 && $request->buscarTipo != 0) {
             if ($request->buscarSector != "" && $request->buscarManzana != "" && $request->buscarTipo != "") {
-                $this->fichaIndividuales($sector2, $manzana2, $tipoficha);
+                $this->fichaIndividuales($sector2, $manzana2, $tipoficha, $lote);
             }
         }
         return view('pages.reporte.fichasmasivas', compact('sectores', 'manzanas', 'sector2', 'manzana2', 'tipoficha'));
     }
 
-    public function fichaIndividuales($sector, $manzana, $tipo_ficha)
+    public function fichaIndividuales($sector, $manzana, $tipo_ficha, ?string $lote = null)
     {
         $fileName = 'Reporte Masivo de Fichas.pdf';
         $mpdf = new \Mpdf\Mpdf([
@@ -206,26 +208,29 @@ class ReporteController extends Controller
             'margin_footer' => 10,
         ]);
         $logos = Institucion::first();
+        $fichas = Ficha::with('unicat')->with('unicat.edificacion')->with('unicat.edificacion.lote')->with('unicat.edificacion.lote.hab_urbana')->with('unicat.edificacion.lote.manzana')
+            ->with('unicat.edificacion.lote.manzana.sectore')->with('puertas')->with('puertas.via')->with('titular')->with('titular.persona')->with('titulars')->with('domiciliotitular')
+            ->with('domiciliotitular.distritos')->with('domiciliotitular.provincias')->with('domiciliotitular.departamento')->with('fichaindividual')->with('fichaindividual.uso')
+            ->with('lindero')->with('serviciobasico')->with('construccions')->with('instalacions')->with('instalacions.codiinstalacion')->with('documento_adjuntos')->with('sunarp')
+            ->with('litigantes')->with('litigantes.persona')->with('verificador')->with('declarante')->with('supervisor')->with('tecnico')
+            ->where('activo', 'LIKE', '%%')->orderBy('nume_ficha', 'asc');
+        if ($sector != '0') {
+            $fichas = $fichas->whereHas('lote.manzana', function ($query) use ($sector) {
+                $query->where('id_sector', '=', $sector);
+            });
+        }
+        if ($manzana != 0) {
+            $fichas = $fichas->whereHas('lote', function ($query) use ($manzana) {
+                $query->where('id_mzna', '=', $manzana);
+            });
+        }
+        if ($lote !== null) {
+            $fichas->whereHas('lote', fn ($query) => $query->where('codi_lote', $lote));
+        }
+        $fichas = $fichas->where('tipo_ficha', '=', $tipo_ficha);
+        $fichas = $fichas->get();
         switch ($tipo_ficha) {
             case ('01'):
-                $fichas = Ficha::with('unicat')->with('unicat.edificacion')->with('unicat.edificacion.lote')->with('unicat.edificacion.lote.hab_urbana')->with('unicat.edificacion.lote.manzana')
-                    ->with('unicat.edificacion.lote.manzana.sectore')->with('puertas')->with('puertas.via')->with('titular')->with('titular.persona')->with('titulars')->with('domiciliotitular')
-                    ->with('domiciliotitular.distritos')->with('domiciliotitular.provincias')->with('domiciliotitular.departamento')->with('fichaindividual')->with('fichaindividual.uso')
-                    ->with('lindero')->with('serviciobasico')->with('construccions')->with('instalacions')->with('instalacions.codiinstalacion')->with('documento_adjuntos')->with('sunarp')
-                    ->with('litigantes')->with('litigantes.persona')->with('verificador')->with('declarante')->with('supervisor')->with('tecnico')
-                    ->where('activo', 'LIKE', '%%')->orderBy('nume_ficha', 'asc');
-                if ($sector != '0') {
-                    $fichas = $fichas->whereHas('lote.manzana', function ($query) use ($sector) {
-                        $query->where('id_sector', '=', $sector);
-                    });
-                }
-                if ($manzana != 0) {
-                    $fichas = $fichas->whereHas('lote', function ($query) use ($manzana) {
-                        $query->where('id_mzna', '=', $manzana);
-                    });
-                }
-                $fichas = $fichas->where('tipo_ficha', '=', $tipo_ficha);
-                $fichas = $fichas->get();
                 $html = \View::make('pages.pdf.individuales', compact('sector', 'fichas', 'logos'));
                 break;
 
@@ -269,7 +274,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -300,7 +306,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -332,7 +339,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -363,7 +371,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -393,7 +402,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -428,7 +438,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -460,7 +471,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -492,7 +504,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%')->where('tipo_ficha', 'LIKE', '03');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -523,7 +536,8 @@ class ReporteController extends Controller
             $ficha2 = $request->buscarFicha;
         }
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -745,7 +759,8 @@ class ReporteController extends Controller
         $manzana2 = $request->buscarManzana;
 
         $ficha = Ficha::select('id_lote', DB::raw('COUNT(id_lote) as cantidad'))->where('activo', 'LIKE', '%%')->groupBy('id_lote');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -759,7 +774,7 @@ class ReporteController extends Controller
 
         $total = 0;
 
-        if ($request->buscarSector == '' && $request->buscarManzana == '') {
+        if ($request->buscarSector == '' && $request->buscarManzana == '' && !$request->filled('buscarLote')) {
             $ficha = [];
         }
 
@@ -784,7 +799,8 @@ class ReporteController extends Controller
 
 
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -822,7 +838,8 @@ class ReporteController extends Controller
         $ficha = Ficha::join('tf_lotes', 'tf_fichas.id_lote', '=', 'tf_lotes.id_lote')
                 ->join('tf_manzanas', 'tf_lotes.id_mzna', '=', 'tf_manzanas.id_mzna')
                 ->orderBy('tf_manzanas.codi_mzna', 'asc');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->where('tf_manzanas.id_sector', '=', $sector2);
         }
         if ($request->buscarManzana != 0) {
@@ -859,7 +876,8 @@ class ReporteController extends Controller
 
 
         $ficha = Ficha::where('tipo_ficha', 'LIKE', '01');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -901,7 +919,8 @@ class ReporteController extends Controller
 
 
         $ficha = Ficha::where('tipo_ficha', 'LIKE', '01');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -1097,7 +1116,8 @@ class ReporteController extends Controller
         $manzana2 = $request->buscarManzana;
 
         $ficha = Ficha::where('activo', 'LIKE', '%%');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });

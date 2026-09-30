@@ -26,7 +26,8 @@ class FichaBienCulturalController extends Controller
         $manzana2=$request->buscarManzana;
         $ficha2=$request->buscarFicha;
         $ficha=Ficha::where('tipo_ficha','=','01');
-        if($request->buscarSector!='0'){
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0'){
             $ficha=$ficha->whereHas('lote.manzana', function($query) use ($sector2) {
                 $query->where('id_sector','=', $sector2);
             });
@@ -44,7 +45,7 @@ class FichaBienCulturalController extends Controller
         $ficha=$ficha->get();
         $total=0;
 
-        if($request->buscarSector==''&&$request->buscarManzana==''&&$request->buscarFicha=='')
+        if($request->buscarSector==''&&$request->buscarManzana==''&&$request->buscarFicha=='' && !$request->filled('buscarLote'))
         {
             $ficha=[];
         }

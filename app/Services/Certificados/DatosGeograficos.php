@@ -46,7 +46,7 @@ class DatosGeograficos
                 $numero !== '' && mb_strtoupper(trim((string) $puerta->nume_muni)) === $numero
             ));
             if (!$coincidentes) {
-                throw new UbicacionNoDisponible('No se encontró una puerta geográfica con el número municipal registrado en la primera puerta principal de la ficha. Revisa geo.v_numeracion_puerta; las coordenadas quedan pendientes.');
+                throw new UbicacionNoDisponible('No se encontró una puerta geográfica con el número municipal registrado en la puerta seleccionada de la ficha. Revisa geo.v_numeracion_puerta; las coordenadas quedan pendientes.');
             }
             // Ante números repetidos, tomar la primera coincidencia como referencia.
             $idPuerta = (string) $coincidentes[0]->id_puerta;

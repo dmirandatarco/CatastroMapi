@@ -65,6 +65,33 @@ class CertificadosTest extends TestCase
         return Ficha::findOrFail('F1');
     }
 
+    public function test_guarda_puerta_elegida_en_historial_y_la_envia_al_servicio_geografico(): void
+    {
+        $ficha = $this->ficha();
+        Schema::create('tf_puertas', function (Blueprint $table) {
+            $table->string('id_puerta')->primary(); $table->string('tipo_puerta'); $table->string('nume_muni');
+        });
+        Schema::create('tf_ingresos', function (Blueprint $table) {
+            $table->string('id_ficha'); $table->string('id_puerta');
+        });
+        DB::table('tf_puertas')->insert(['id_puerta' => 'G1', 'tipo_puerta' => 'G', 'nume_muni' => '44']);
+        DB::table('tf_ingresos')->insert(['id_ficha' => 'F1', 'id_puerta' => 'G1']);
+        $automaticos = array_replace($this->datos('numeracion'), ['id_puerta' => 'G1', 'tipo_puerta' => '(G) GARAJE', 'direccion' => 'CALLE DEL GARAJE N.º 44']);
+        $this->mock(\App\Services\Certificados\DatosNumeracion::class)->shouldReceive('desdeFicha')->once()
+            ->with(\Mockery::type(Ficha::class), 'G1')->andReturn($automaticos);
+        $this->mock(\App\Services\Certificados\UbicacionPredioService::class)->shouldReceive('obtener')->once()
+            ->with(\Mockery::type(Ficha::class), 'numeracion', 'G1')->andReturn([
+                'png' => null, 'datos' => ['este' => '12.00', 'norte' => '22.00'], 'advertencias' => [], 'consultado_en' => now()->toIso8601String(),
+            ]);
+        $record = app(EmisionCertificadoService::class)->emit($ficha, 'numeracion', $this->datos('numeracion'), 1,
+            ['foto' => \Illuminate\Http\UploadedFile::fake()->image('puerta.png')], 'G1');
+        $snapshot = $record->fresh()->documento['datos'];
+        $this->assertSame('G1', $snapshot['id_puerta']);
+        $this->assertSame('(G) GARAJE', $snapshot['tipo_puerta']);
+        $this->assertSame('CALLE DEL GARAJE N.º 44', $snapshot['direccion']);
+        $this->assertSame('12.00', $snapshot['este']);
+    }
+
     private function datos(string $tipo): array
     {
         $datos = array_fill_keys(array_keys(CamposCertificado::definitions($tipo)), '');
@@ -170,7 +197,7 @@ class CertificadosTest extends TestCase
         $cotitular = (new \App\Models\Titular)->setRelation('persona', (new \App\Models\Persona)->forceFill(['nombres' => 'COTITULAR VINCULADO']));
         $anexo = (new Ficha)->setRelation('titulars', new \Illuminate\Database\Eloquent\Collection([$cotitular]));
         $ficha->setRelation('cotitularesRelacionados', new \Illuminate\Database\Eloquent\Collection([$anexo]));
-        $secundaria = (new \App\Models\Puerta)->forceFill(['tipo_puerta' => 'S', 'nume_muni' => '99'])
+        $secundaria = (new \App\Models\Puerta)->forceFill(['id_puerta' => 'S1', 'tipo_puerta' => 'S', 'nume_muni' => '99', 'cond_nume' => '02'])
             ->setRelation('via', (new \App\Models\Via)->forceFill(['tipo_via' => 'CA.', 'nomb_via' => 'SECUNDARIA']));
         $principal = (new \App\Models\Puerta)->forceFill(['tipo_puerta' => 'P', 'nume_muni' => '207'])
             ->setRelation('via', (new \App\Models\Via)->forceFill(['tipo_via' => 'CA.', 'nomb_via' => 'PRINCIPAL']));
@@ -187,6 +214,11 @@ class CertificadosTest extends TestCase
         $this->assertSame('AUTOGENERADO POR EL TITULAR CAT.', $numeracion['tipo_numeracion']);
         $this->assertSame('', $numeracion['numero_municipal']);
         $this->assertSame('', $numeracion['este']);
+        $elegida = (new \App\Services\Certificados\DatosNumeracion)->desdeFicha($ficha, 'S1');
+        $this->assertSame('S1', $elegida['id_puerta']);
+        $this->assertSame('CA. SECUNDARIA N.º 99', $elegida['direccion']);
+        $this->assertSame('(S) SECUNDARIO', $elegida['tipo_puerta']);
+        $this->assertSame('AUTOGENERADO POR EL TITULAR CAT.', $elegida['tipo_numeracion']);
         $this->assertSame('COTITULAR VINCULADO', $datos['titulares']);
         $this->assertSame('CA. PRINCIPAL N.º 207', $datos['direccion']);
         $this->assertSame('Mediante Resolución N.° 014-89-CDM-A del año 1989 se adjudicó a doña Martha Victoria Moreano Herencia la Manzana N.° M-20, con un área de 128.00 m² y un perímetro de 32.00 ml. Asimismo, mediante Escritura Pública de Anticipo de Legítima N.° 1295 2025, se otorgó el predio a favor de: COTITULAR VINCULADO', $datos['observaciones']);

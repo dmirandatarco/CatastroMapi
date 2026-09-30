@@ -18,20 +18,17 @@ class UbicacionPredioService
     {
     }
 
-    public function obtener(Ficha $ficha, string $tipo = 'catastral'): array
+    public function obtener(Ficha $ficha, string $tipo = 'catastral', ?string $idPuerta = null): array
     {
         abort_unless(in_array($tipo, ['catastral', 'numeracion'], true), 422);
         $capas = $tipo === 'numeracion' ? self::CAPAS_NUMERACION : self::CAPAS;
         $idLote = (string) $ficha->id_lote;
         $puertas = [];
         if ($tipo === 'numeracion') {
-            $ficha->loadMissing('puertas');
-            $puertas = $ficha->puertas->filter(fn ($puerta) => strtoupper(trim((string) $puerta->tipo_puerta)) === 'P')
-                ->unique('id_puerta')->sortBy('id_puerta')->map(fn ($puerta) => [
-                    'id' => (string) $puerta->id_puerta, 'numero' => (string) $puerta->nume_muni,
-                ])->values()->all();
+            $puerta = PuertaCertificado::seleccionar($ficha, $idPuerta);
+            $puertas = $puerta ? [['id' => (string) $puerta->id_puerta, 'numero' => (string) $puerta->nume_muni]] : [];
         }
-        $clave = 'certificados:ubicacion:v4:'.hash('sha256', json_encode([
+        $clave = 'certificados:ubicacion:v5:'.hash('sha256', json_encode([
             $idLote, $tipo, $capas, $puertas, config('certificados.ubicacion'),
             config('database.connections.pgsqlgeo.host'), config('database.connections.pgsqlgeo.database'),
             config('database.connections.pgsqlgeo.port'), config('database.connections.pgsqlgeo.search_path'),
@@ -68,7 +65,7 @@ class UbicacionPredioService
     private function coordenadasPuerta(string $idLote, array $puertas, array &$resultado): void
     {
         if (!$puertas) {
-            $resultado['advertencias'][] = 'Para obtener las coordenadas del número municipal, la ficha debe identificar una puerta principal P.';
+            $resultado['advertencias'][] = 'Registra y selecciona una puerta de la ficha para obtener las coordenadas del número municipal.';
             return;
         }
         try {
@@ -81,7 +78,7 @@ class UbicacionPredioService
             return;
         }
         if (!$puerta || (int) ($puerta['srid'] ?? 0) !== (int) config('certificados.ubicacion.srid') || !is_numeric($puerta['este'] ?? null) || !is_numeric($puerta['norte'] ?? null)) {
-            $resultado['advertencias'][] = 'No se encontró la geometría de la puerta principal en UTM 18S. Sus coordenadas quedan pendientes.';
+            $resultado['advertencias'][] = 'No se encontró la geometría de la puerta seleccionada en UTM 18S. Sus coordenadas quedan pendientes.';
             return;
         }
         $resultado['datos']['este'] = number_format((float) $puerta['este'], 2, '.', '');

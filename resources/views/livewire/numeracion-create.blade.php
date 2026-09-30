@@ -8,6 +8,19 @@
         @if($errors->any())<div class="alert alert-danger" role="alert"><strong>Revisa lo siguiente:</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
         <div class="row">
             <div class="col-lg-7">
+                <section class="cc-panel">
+                    <h5>Puerta a certificar</h5>
+                    <p class="cc-description">Elige cualquiera de las puertas registradas en esta ficha.</p>
+                    <label for="cn-puerta" class="cc-label mt-3">Puerta <span class="text-danger">*</span></label>
+                    <select id="cn-puerta" class="form-select" wire:model="puertaSeleccionada">
+                        @if($puertasDisponibles->isEmpty())<option value="">No hay puertas registradas</option>@endif
+                        @foreach($puertasDisponibles as $puerta)
+                            <option value="{{ $puerta->id_puerta }}">{{ $puerta->codi_puerta ?: $puerta->id_puerta }} · {{ \App\Services\Certificados\PuertaCertificado::tipo($puerta) }} · {{ \App\Services\Certificados\PuertaCertificado::direccion($puerta) ?: 'Sin dirección registrada' }}</option>
+                        @endforeach
+                    </select>
+                    <div wire:loading wire:target="puertaSeleccionada" class="cc-muted mt-2">Actualizando datos y coordenadas de la puerta…</div>
+                    @error('puertaSeleccionada')<div class="text-danger">{{ $message }}</div>@enderror
+                </section>
                 @foreach([
                     'Datos de la solicitud' => ['fut', 'expediente', 'solicitante', 'informe'],
                     'Numeración municipal' => ['numero_municipal', 'tipo_numero', 'estado_numeracion', 'cuadra', 'lado'],
@@ -26,14 +39,14 @@
                         </div>
                         @if($titulo === 'Numeración municipal')
                             <label for="cn-foto" class="cc-label">Fotografía de la puerta <span class="text-danger">*</span></label>
-                            <input id="cn-foto" type="file" class="form-control" wire:model="foto" accept="image/jpeg,image/png">
+                            <input wire:key="foto-puerta-{{ $puertaSeleccionada }}" id="cn-foto" type="file" class="form-control" wire:model="foto" accept="image/jpeg,image/png">
                             <div class="cc-muted mt-2">JPG o PNG · máximo 8 MB</div>
                             <div wire:loading wire:target="foto" class="cc-muted mt-2">Cargando fotografía…</div>
                             @error('foto')<div class="text-danger">{{ $message }}</div>@enderror
                             @if($foto && in_array(strtolower($foto->getClientOriginalExtension()), ['jpg', 'jpeg', 'png']))<img class="cc-photo mt-3" src="{{ $foto->temporaryUrl() }}" alt="Fotografía de la puerta seleccionada">@endif
                         @endif
                         @if($loop->last)
-                            <div class="cc-footer"><div class="cc-muted">Correlativo automático al guardar.<br>La emisión se conserva en el historial.</div><button type="submit" class="cc-submit" wire:loading.attr="disabled" wire:target="register,foto"><span wire:loading.remove wire:target="register">Generar certificado</span><span wire:loading wire:target="register">Generando…</span></button></div>
+                            <div class="cc-footer"><div class="cc-muted">Correlativo automático al guardar.<br>La emisión se conserva en el historial.</div><button type="submit" class="cc-submit" wire:loading.attr="disabled" wire:target="register,foto,puertaSeleccionada"><span wire:loading.remove wire:target="register">Generar certificado</span><span wire:loading wire:target="register">Generando…</span></button></div>
                         @endif
                     </section>
                 @endforeach
@@ -43,7 +56,7 @@
                     <h5>Datos de la ficha</h5><p class="cc-description">Se incorporan automáticamente.</p>
                     <div class="cc-code">@foreach(['ubigeo' => 'Ubigeo', 'sector' => 'Sector', 'manzana' => 'Manzana', 'lote' => 'Lote'] as $key => $label)<div><small>{{ $label }}</small><strong>{{ $resumen[$key] ?: '—' }}</strong></div>@endforeach</div>
                     <p class="cc-fixed">Cusco · Urubamba · Machupicchu</p>
-                    @foreach(['titulares' => 'Titulares / cotitulares', 'direccion' => 'Ubicación · puerta principal P', 'tipo_puerta' => 'Tipo de puerta', 'tipo_numeracion' => 'Tipo de numeración'] as $key => $label)
+                    @foreach(['titulares' => 'Titulares / cotitulares', 'direccion' => 'Ubicación · puerta seleccionada', 'tipo_puerta' => 'Tipo de puerta', 'tipo_numeracion' => 'Tipo de numeración'] as $key => $label)
                         <div class="cc-muted mt-3 mb-1">{{ $label }}</div><div class="cc-name">{{ $resumen[$key] ?: 'Falta registrar este dato en la ficha.' }}</div>
                     @endforeach
                 </section>

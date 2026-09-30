@@ -22,11 +22,12 @@ class FiltroCertificadosRequest extends FormRequest
                 }
             }))],
             'buscarFicha' => ['bail', 'nullable', 'string', 'regex:/^\d{1,7}$/'],
+            'buscarLote' => ['bail', 'nullable', 'string', 'regex:/^\d{1,3}$/'],
         ];
     }
 
     public function attributes(): array
     {
-        return ['buscarSector' => 'sector', 'buscarManzana' => 'manzana del sector seleccionado', 'buscarFicha' => 'número de ficha'];
+        return ['buscarSector' => 'sector', 'buscarManzana' => 'manzana del sector seleccionado', 'buscarFicha' => 'número de ficha', 'buscarLote' => 'lote'];
     }
 }

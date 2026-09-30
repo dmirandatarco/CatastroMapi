@@ -42,6 +42,7 @@
                     </select>
                     <br>                              
                 </div>
+                @include('partials.filtro-lote')
                 
                 <div class="col-md-2 mb-5">
                     <div class="input-group">

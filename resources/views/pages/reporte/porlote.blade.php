@@ -39,6 +39,7 @@
                     </select>
                     <br>                              
                 </div>
+                @include('partials.filtro-lote')
                 <div class="col-md-2 mb-5">
                     <div class="input-group">
                         <button type="submit"  id="buscar" class="btn btn-primary"><i data-feather="search"></i> Buscar</button>

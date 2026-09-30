@@ -15,6 +15,7 @@ abstract class CertificadoCreate extends Component
     public Ficha $fichaanterior;
     public array $datos = [];
     public $foto;
+    public ?string $puertaSeleccionada = null;
     public array $ubicacion = ['estado' => 'pendiente', 'advertencias' => [], 'datos' => [], 'plano' => false];
 
     abstract protected function tipo(): string;
@@ -24,19 +25,25 @@ abstract class CertificadoCreate extends Component
         abort_unless(auth()->check(), 403);
         $this->fichaanterior = $fichaanterior;
         $this->datos = app(EmisionCertificadoService::class)->defaults($fichaanterior, $this->tipo());
+        if ($this->tipo() === 'numeracion') {
+            $this->puertaSeleccionada = $this->datos['id_puerta'] ?: null;
+        }
     }
 
     public function register()
     {
         abort_unless(auth()->check(), 403);
         $rules = $this->tipo() === 'catastral' ? CamposCertificado::manualesCatastral() : CamposCertificado::manualesNumeracion();
+        if ($this->tipo() === 'numeracion') {
+            $rules['puertaSeleccionada'] = 'required|string';
+        }
         $this->validate($rules + [
             'foto' => ($this->tipo() === 'numeracion' ? 'required' : 'nullable').'|image|mimes:jpg,jpeg,png|max:8192',
         ]);
         try {
             $record = app(EmisionCertificadoService::class)->emit(
                 $this->fichaanterior, $this->tipo(), $this->datos, auth()->user()->id_usuario,
-                array_filter(['foto' => $this->foto])
+                array_filter(['foto' => $this->foto]), $this->puertaSeleccionada
             );
         } catch (\Illuminate\Validation\ValidationException $error) {
             throw $error;
@@ -55,7 +62,7 @@ abstract class CertificadoCreate extends Component
     {
         abort_unless(auth()->check(), 403);
         $ficha = Ficha::findOrFail($this->fichaanterior->getKey());
-        $resultado = app(\App\Services\Certificados\UbicacionPredioService::class)->obtener($ficha, $this->tipo());
+        $resultado = app(\App\Services\Certificados\UbicacionPredioService::class)->obtener($ficha, $this->tipo(), $this->puertaSeleccionada);
         $this->ubicacion = [
             'estado' => 'consultado', 'plano' => $resultado['png'] !== null,
             'datos' => $resultado['datos'], 'advertencias' => $resultado['advertencias'],
@@ -74,8 +81,16 @@ abstract class CertificadoCreate extends Component
         return view('livewire.numeracion-create', [
             'campos' => CamposCertificado::definitions('numeracion'),
             'tipoUbicacion' => 'numeracion',
-            'resumen' => app(\App\Services\Certificados\DatosNumeracion::class)->desdeFicha($this->fichaanterior),
+            'resumen' => app(\App\Services\Certificados\DatosNumeracion::class)->desdeFicha($this->fichaanterior, $this->puertaSeleccionada),
+            'puertasDisponibles' => $this->fichaanterior->puertas->sortBy('id_puerta'),
             'observaciones' => \App\Services\Certificados\DatosNumeracion::observaciones($this->datos['solicitante'] ?: '[SOLICITANTE]'),
         ]);
+    }
+
+    public function updatedPuertaSeleccionada(): void
+    {
+        $this->resetErrorBag();
+        $this->foto = null;
+        $this->cargarUbicacion();
     }
 }

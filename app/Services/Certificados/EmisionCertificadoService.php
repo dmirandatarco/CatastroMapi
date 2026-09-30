@@ -40,7 +40,7 @@ class EmisionCertificadoService
         return $images;
     }
 
-    public function emit(Ficha $ficha, string $tipo, array $datos, int $usuario, array $uploads = []): Model
+    public function emit(Ficha $ficha, string $tipo, array $datos, int $usuario, array $uploads = [], ?string $idPuerta = null): Model
     {
         abort_unless(in_array($tipo, ['numeracion', 'catastral'], true), 422);
         $rules = $tipo === 'catastral' ? CamposCertificado::manualesCatastral() : CamposCertificado::manualesNumeracion();
@@ -51,11 +51,14 @@ class EmisionCertificadoService
         }
         // Las consultas GIS y HTTP ocurren antes de bloquear ficha y correlativo.
         $ficha = Ficha::findOrFail($ficha->getKey());
-        $ubicacion = app(UbicacionPredioService::class)->obtener($ficha, $tipo);
+        if ($tipo === 'numeracion' && $idPuerta !== null) {
+            PuertaCertificado::seleccionar($ficha, $idPuerta);
+        }
+        $ubicacion = app(UbicacionPredioService::class)->obtener($ficha, $tipo, $idPuerta);
         $loteConsultado = $ficha->id_lote;
         $files = [];
         try {
-            return DB::transaction(function () use ($ficha, $tipo, $datos, $usuario, $uploads, $model, $ubicacion, $loteConsultado, &$files) {
+            return DB::transaction(function () use ($ficha, $tipo, $datos, $usuario, $uploads, $model, $ubicacion, $loteConsultado, $idPuerta, &$files) {
                 $ficha = Ficha::whereKey($ficha->getKey())->lockForUpdate()->firstOrFail();
                 if ($ficha->id_lote !== $loteConsultado) {
                     throw ValidationException::withMessages(['emision' => 'El lote de la ficha cambió durante la consulta. Vuelve a generar el certificado.']);
@@ -74,15 +77,15 @@ class EmisionCertificadoService
                     $uploads = [];
                 }
                 if ($tipo === 'numeracion') {
-                    $automaticos = app(DatosNumeracion::class)->desdeFicha($ficha);
+                    $automaticos = app(DatosNumeracion::class)->desdeFicha($ficha, $idPuerta);
                     $datos = array_replace($automaticos, array_intersect_key($datos, array_flip(DatosNumeracion::MANUALES)));
                     $datos['numero'] = app(CorrelativoCertificado::class)->siguiente((int) substr($datos['fecha'], 0, 4), $tipo);
                     $datos['observaciones'] = DatosNumeracion::observaciones($datos['solicitante']);
                     $datos['observaciones_fijas'] = true;
                     Validator::make(['datos' => $datos], CamposCertificado::rules($tipo), [], [
                         'datos.titulares' => 'titulares de la ficha o su cotitularidad',
-                        'datos.direccion' => 'dirección de la puerta principal P',
-                        'datos.tipo_numeracion' => 'tipo de numeración de la puerta principal',
+                        'datos.direccion' => 'dirección de la puerta seleccionada',
+                        'datos.tipo_numeracion' => 'tipo de numeración de la puerta seleccionada',
                     ])->validate();
                     $uploads = array_intersect_key($uploads, ['foto' => true]);
                 }

@@ -1,12 +1,13 @@
 (function () {
     'use strict';
 
-    const selector = 'input[name="buscarFicha"]';
+    const selector = 'input[name="buscarFicha"], input[name="buscarLote"]';
 
     function completarNumero(input) {
         const numero = input.value.trim();
-        if (/^[0-9]{1,7}$/.test(numero)) {
-            input.value = numero.padStart(7, '0');
+        const digitos = input.name === 'buscarLote' ? 3 : 7;
+        if (/^[0-9]+$/.test(numero) && numero.length <= digitos) {
+            input.value = numero.padStart(digitos, '0');
         }
     }
 

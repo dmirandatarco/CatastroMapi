@@ -19,8 +19,9 @@
         <div class="row align-items-end g-3">
             <div class="col-md-3"><label class="form-label" for="buscarSector">Sector</label><select class="form-select" name="buscarSector" id="buscarSector"><option value="0">Todos los sectores</option>@foreach($sectores as $sector)<option value="{{ $sector->id_sector }}" @selected(($filtros['buscarSector'] ?? '0') == $sector->id_sector)>{{ $sector->codi_sector }} · {{ $sector->nomb_sector }}</option>@endforeach</select></div>
             <div class="col-md-3"><label class="form-label" for="buscarManzana">Manzana</label><select class="form-select" name="buscarManzana" id="buscarManzana"><option value="0">Todas las manzanas</option>@foreach($manzanas as $manzana)@if(empty($filtros['buscarSector']) || $filtros['buscarSector'] == $manzana->id_sector)<option value="{{ $manzana->id_mzna }}" @selected(($filtros['buscarManzana'] ?? '0') == $manzana->id_mzna)>{{ $manzana->codi_mzna }}</option>@endif @endforeach</select></div>
-            <div class="col-md-3"><label class="form-label" for="buscarFicha">Número de ficha individual</label><input class="form-control" id="buscarFicha" name="buscarFicha" inputmode="numeric" pattern="[0-9]{1,7}" maxlength="7" placeholder="Ej. 0000125" value="{{ $filtros['buscarFicha'] ?? '' }}"></div>
-            <div class="col-md-3 d-flex gap-2"><button class="btn btn-primary" type="submit">Buscar</button><a class="btn btn-light" href="{{ route($historial ? $rutaHistorial : $rutaSeleccion) }}">Limpiar</a></div>
+            <div class="col-md-2"><label class="form-label" for="buscarLote">Lote</label><input class="form-control" id="buscarLote" name="buscarLote" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" placeholder="Ej. 004" value="{{ $filtros['buscarLote'] ?? '' }}"></div>
+            <div class="col-md-2"><label class="form-label" for="buscarFicha">Número de ficha individual</label><input class="form-control" id="buscarFicha" name="buscarFicha" inputmode="numeric" pattern="[0-9]{1,7}" maxlength="7" placeholder="Ej. 0000125" value="{{ $filtros['buscarFicha'] ?? '' }}"></div>
+            <div class="col-md-2 d-flex gap-2"><button class="btn btn-primary" type="submit">Buscar</button><a class="btn btn-light" href="{{ route($historial ? $rutaHistorial : $rutaSeleccion) }}">Limpiar</a></div>
         </div>
     </form>
 </div></div>

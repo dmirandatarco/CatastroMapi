@@ -14,6 +14,10 @@ class ConsultaCertificados
     public function filtrar(Builder $query, array $filtros, bool $historial): Builder
     {
         $prefijo = $historial ? 'ficha.' : '';
+        if (isset($filtros['buscarLote']) && $filtros['buscarLote'] !== '') {
+            $numero = str_pad($filtros['buscarLote'], 3, '0', STR_PAD_LEFT);
+            $query->whereHas($prefijo.'lote', fn ($q) => $q->where('codi_lote', $numero));
+        }
         if (!empty($filtros['buscarSector'])) {
             $query->whereHas($prefijo.'lote.manzana', fn ($q) => $q->where('id_sector', $filtros['buscarSector']));
         }

@@ -118,7 +118,8 @@ class FichaCotitularidadController extends Controller
         }
 
         $ficha = Ficha::where('tipo_ficha', '=', '01');
-        if ($request->buscarSector != '0') {
+        \App\Services\FiltroLote::aplicar($ficha, $request);
+        if ($request->filled('buscarSector') && $request->buscarSector != '0') {
             $ficha = $ficha->whereHas('lote.manzana', function ($query) use ($sector2) {
                 $query->where('id_sector', '=', $sector2);
             });
@@ -134,7 +135,7 @@ class FichaCotitularidadController extends Controller
         $ficha = $ficha->orderby('nume_ficha')->get();
         $total = 0;
 
-        if ($request->buscarSector == '' && $request->buscarManzana == '' && $request->buscarFicha == '') {
+        if ($request->buscarSector == '' && $request->buscarManzana == '' && $request->buscarFicha == '' && !$request->filled('buscarLote')) {
             $ficha = [];
         }
 

@@ -44,6 +44,31 @@ class UbicacionPredioTest extends TestCase
         return $png;
     }
 
+    public function test_seleccionar_garaje_cambia_coordenadas_y_cache(): void
+    {
+        $geo = $this->mock(DatosGeograficos::class);
+        $geo->shouldReceive('lote')->twice()->andReturn($this->lote());
+        $geo->shouldReceive('puerta')->once()->with('08130401023001', '10')->andReturn(['srid' => 32718, 'este' => 10, 'norte' => 20]);
+        $geo->shouldReceive('puerta')->once()->with('08130401023001', '12')->andReturn(['srid' => 32718, 'este' => 12, 'norte' => 22]);
+        Http::fake(['*' => Http::response($this->png())]);
+        $ficha = $this->ficha([
+            (new Puerta)->forceFill(['id_puerta' => 'P1', 'tipo_puerta' => 'P', 'nume_muni' => '10']),
+            (new Puerta)->forceFill(['id_puerta' => 'G1', 'tipo_puerta' => 'G', 'nume_muni' => '12']),
+        ]);
+        $service = app(UbicacionPredioService::class);
+        $this->assertSame('10.00', $service->obtener($ficha, 'numeracion', 'P1')['datos']['este']);
+        $this->assertSame('12.00', $service->obtener($ficha, 'numeracion', 'G1')['datos']['este']);
+        $this->assertSame('12.00', $service->obtener($ficha, 'numeracion', 'G1')['datos']['este']);
+        Http::assertSentCount(2);
+    }
+
+    public function test_rechaza_puerta_de_otra_ficha_antes_de_consultar_gis(): void
+    {
+        $this->mock(DatosGeograficos::class)->shouldNotReceive('lote');
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        app(UbicacionPredioService::class)->obtener($this->ficha(), 'numeracion', 'AJENA');
+    }
+
     public function test_pide_capas_bbox_y_tamano_documentados_a_url_configurada_y_conserva_orden_de_vertices(): void
     {
         $geo = $this->mock(DatosGeograficos::class);

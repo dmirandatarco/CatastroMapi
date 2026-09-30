@@ -8,7 +8,7 @@
         <div class="cc-empty mt-3">Consultando la ubicación del predio…</div>
     @else
         @if($ubicacion['plano'])
-            <img class="cc-photo mt-3" style="height:auto;max-height:280px" src="{{ route('certificados.plano', ['ficha' => $fichaanterior, 'tipo' => $tipoUbicacion]) }}" alt="Plano catastral del lote">
+            <img class="cc-photo mt-3" style="height:auto;max-height:280px" src="{{ route('certificados.plano', ['ficha' => $fichaanterior, 'tipo' => $tipoUbicacion, 'puerta' => $puertaSeleccionada]) }}" alt="Plano catastral del lote">
         @else
             <div class="cc-empty mt-3">Plano pendiente · puedes generar el certificado</div>
         @endif
@@ -24,7 +24,7 @@
             </details>
         @endif
         @if(isset($ubicacion['datos']['este'], $ubicacion['datos']['norte']))
-            <div class="cc-fixed mt-3">Puerta principal · UTM 18S<br>Este: {{ $ubicacion['datos']['este'] }}<br>Norte: {{ $ubicacion['datos']['norte'] }}</div>
+            <div class="cc-fixed mt-3">Puerta seleccionada · UTM 18S<br>Este: {{ $ubicacion['datos']['este'] }}<br>Norte: {{ $ubicacion['datos']['norte'] }}</div>
         @endif
     @endif
 </section>
