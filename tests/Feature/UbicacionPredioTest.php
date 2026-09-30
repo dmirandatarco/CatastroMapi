@@ -87,17 +87,20 @@ class UbicacionPredioTest extends TestCase
         });
     }
 
-    public function test_no_inventa_punto_cuando_hay_varias_puertas_principales(): void
+    public function test_toma_primera_puerta_principal_por_id_cuando_hay_varias(): void
     {
         $geo = $this->mock(DatosGeograficos::class);
         $geo->shouldReceive('lote')->andReturn($this->lote());
-        $geo->shouldNotReceive('puerta');
+        $geo->shouldReceive('puerta')->once()->with('08130401023001', '123')->andReturn(['srid' => 32718, 'este' => 768400.25, 'norte' => 8544500.75]);
         Http::fake(['*' => Http::response($this->png())]);
-        $ficha = $this->ficha([(new Puerta)->forceFill(['id_puerta' => 'P1', 'tipo_puerta' => 'P']), (new Puerta)->forceFill(['id_puerta' => 'P2', 'tipo_puerta' => 'P'])]);
+        $ficha = $this->ficha([
+            (new Puerta)->forceFill(['id_puerta' => 'P2', 'tipo_puerta' => 'P', 'nume_muni' => '456']),
+            (new Puerta)->forceFill(['id_puerta' => 'P1', 'tipo_puerta' => 'P', 'nume_muni' => '123']),
+        ]);
         $resultado = app(UbicacionPredioService::class)->obtener($ficha, 'numeracion');
-        $this->assertSame([], $resultado['datos']);
+        $this->assertSame(['este' => '768400.25', 'norte' => '8544500.75'], $resultado['datos']);
         $this->assertNotNull($resultado['png']);
-        $this->assertCount(1, $resultado['advertencias']);
+        $this->assertSame([], $resultado['advertencias']);
     }
 
     public function test_coordenadas_usan_identificador_gis_resuelto_por_la_vista(): void
@@ -107,10 +110,10 @@ class UbicacionPredioTest extends TestCase
         $conexion->shouldReceive('transaction')->andReturnUsing(fn ($consulta) => $consulta($conexion));
         $conexion->shouldReceive('statement')->with("SET LOCAL statement_timeout = '5000ms'")->andReturn(true);
         $conexion->shouldReceive('select')->once()->with(
-            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote ORDER BY id_puerta',
             ['lote' => '08130401023001']
         )->andReturn([(object) ['id_puerta' => '0813040102300101', 'nume_muni' => ' S/N '],
-            (object) ['id_puerta' => '0813040102300102', 'nume_muni' => '123']]);
+            (object) ['id_puerta' => '0813040102300102', 'nume_muni' => 'S/N']]);
         $conexion->shouldReceive('select')->once()->with(\Mockery::on(fn ($sql) => str_contains($sql, 'ST_SRID(geom)')),
             ['lote' => '08130401023001', 'puerta' => '0813040102300101']
         )->andReturn([(object) ['srid' => 32718]]);
@@ -129,7 +132,7 @@ class UbicacionPredioTest extends TestCase
         $conexion->shouldReceive('transaction')->andReturnUsing(fn ($consulta) => $consulta($conexion));
         $conexion->shouldReceive('statement')->andReturn(true);
         $conexion->shouldReceive('select')->once()->with(
-            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+            'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote ORDER BY id_puerta',
             ['lote' => '08130401023001']
         )->andReturn(array_map(fn ($valor) => (object) ['id_puerta' => 'gis', 'nume_muni' => $valor], $numeros));
         $this->expectException(UbicacionNoDisponible::class);
@@ -138,7 +141,7 @@ class UbicacionPredioTest extends TestCase
 
     public static function numerosSinCorrespondenciaUnica(): array
     {
-        return [['S/N', ['S/N', 'S/N']], ['123', ['456']], ['', [null]], ['123', []]];
+        return [['123', ['456']], ['', [null]], ['123', []]];
     }
 
     public function test_error_de_puerta_no_impide_obtener_el_plano(): void

@@ -38,16 +38,17 @@ class DatosGeograficos
             $connection->statement("SET LOCAL statement_timeout = '5000ms'");
             // La vista relaciona los dos sistemas; sus identificadores de puerta son distintos.
             $puertas = $connection->select(
-                'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote',
+                'SELECT id_puerta, nume_muni FROM geo.v_numeracion_puerta WHERE id_lote = :lote ORDER BY id_puerta',
                 ['lote' => $idLote]
             );
             $numero = mb_strtoupper(trim($numeroMunicipal));
             $coincidentes = array_values(array_filter($puertas, fn ($puerta) =>
                 $numero !== '' && mb_strtoupper(trim((string) $puerta->nume_muni)) === $numero
             ));
-            if (count($coincidentes) !== 1) {
-                throw new UbicacionNoDisponible('No se pudo identificar una única puerta geográfica con el número municipal registrado en la puerta principal de la ficha. Revisa geo.v_numeracion_puerta; las coordenadas quedan pendientes.');
+            if (!$coincidentes) {
+                throw new UbicacionNoDisponible('No se encontró una puerta geográfica con el número municipal registrado en la primera puerta principal de la ficha. Revisa geo.v_numeracion_puerta; las coordenadas quedan pendientes.');
             }
+            // Ante números repetidos, tomar la primera coincidencia como referencia.
             $idPuerta = (string) $coincidentes[0]->id_puerta;
             $filas = $connection->select(
                 'SELECT ST_SRID(geom) AS srid

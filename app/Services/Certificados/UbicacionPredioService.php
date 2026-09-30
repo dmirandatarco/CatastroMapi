@@ -31,7 +31,7 @@ class UbicacionPredioService
                     'id' => (string) $puerta->id_puerta, 'numero' => (string) $puerta->nume_muni,
                 ])->values()->all();
         }
-        $clave = 'certificados:ubicacion:v3:'.hash('sha256', json_encode([
+        $clave = 'certificados:ubicacion:v4:'.hash('sha256', json_encode([
             $idLote, $tipo, $capas, $puertas, config('certificados.ubicacion'),
             config('database.connections.pgsqlgeo.host'), config('database.connections.pgsqlgeo.database'),
             config('database.connections.pgsqlgeo.port'), config('database.connections.pgsqlgeo.search_path'),
@@ -67,8 +67,8 @@ class UbicacionPredioService
 
     private function coordenadasPuerta(string $idLote, array $puertas, array &$resultado): void
     {
-        if (count($puertas) !== 1) {
-            $resultado['advertencias'][] = 'Para obtener las coordenadas del número municipal, la ficha debe identificar una sola puerta principal P.';
+        if (!$puertas) {
+            $resultado['advertencias'][] = 'Para obtener las coordenadas del número municipal, la ficha debe identificar una puerta principal P.';
             return;
         }
         try {
