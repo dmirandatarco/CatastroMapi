@@ -80,7 +80,7 @@ class LoteEnlacesController extends Controller
         $nombre = $registro->$campo;
         $ruta = $this->rutaArchivoDisponible($nombre);
         abort_if($ruta === null, 404, 'El archivo no se encuentra disponible.');
-        return Storage::download($ruta, $nombre, ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return Storage::response($ruta, $nombre, ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function archivoLote(Lote $lote, string $campo)
@@ -90,7 +90,7 @@ class LoteEnlacesController extends Controller
         $ruta = $this->rutaArchivoDisponible($nombre);
         abort_if($ruta === null, 404, 'El archivo no se encuentra disponible.');
 
-        return Storage::download($ruta, $nombre, ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return Storage::response($ruta, $nombre, ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     private function nombreArchivoLote(Lote $lote, string $campo): ?string

@@ -11,13 +11,13 @@ use Tests\TestCase;
 
 class RentasPdfApiTest extends TestCase
 {
-    public function test_plano_compartido_por_lote_aparece_y_se_descarga(): void
+    public function test_plano_compartido_por_lote_se_abre_inline(): void
     {
         Storage::put('img/archivos/001-plano.pdf', '%PDF-plano');
         $response = $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk();
         $this->assertSame($response->json('0.archivos'), $response->json('1.archivos'));
         $this->assertStringEndsWith('/archivos/plano', $response->json('0.archivos.0'));
-        $this->get($response->json('0.archivos.0'))->assertOk()->assertDownload('001-plano.pdf');
+        $this->get($response->json('0.archivos.0'))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.'001-plano.pdf');
     }
 
     public function test_pu_renderiza_logo_machupicchu_y_datos_sin_marca_wanchaq(): void
@@ -57,10 +57,10 @@ class RentasPdfApiTest extends TestCase
         $response = $this->getJson('/api/rentas/lotes/08130401023016/enlaces')->assertOk()
             ->assertJsonCount(2, '0.archivos')->assertJsonCount(2, '1.archivos');
         $this->assertSame($response->json('0.archivos'), $response->json('1.archivos'));
-        $this->get($response->json('0.archivos.0'))->assertOk()->assertDownload('01023016-rentas.pdf');
+        $this->get($response->json('0.archivos.0'))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.'01023016-rentas.pdf');
         $this->getJson('/api/rentas/lotes/08010101023016/archivos/rentas')->assertNotFound();
         Storage::put('img/archivos/08130401023016-rentas.pdf', '%PDF-completo');
-        $this->get($response->json('0.archivos.0'))->assertOk()->assertDownload('08130401023016-rentas.pdf');
+        $this->get($response->json('0.archivos.0'))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.'08130401023016-rentas.pdf');
         Storage::delete(['img/archivos/01023016-sunarp.pdf']);
         $this->getJson('/api/rentas/lotes/08130401023016/enlaces')->assertOk()->assertJsonCount(1, '0.archivos');
         $this->getJson($response->json('0.archivos.1'))->assertNotFound();
@@ -77,7 +77,7 @@ class RentasPdfApiTest extends TestCase
             ->assertJsonCount(2, '0.archivos')->assertJsonCount(2, '1.archivos');
         $this->assertSame($response->json('0.archivos'), $response->json('1.archivos'));
         foreach (['rentas', 'sunarp'] as $indice => $campo) {
-            $this->get($response->json('0.archivos.'.$indice))->assertOk()->assertDownload('001-'.$campo.'.pdf');
+            $this->get($response->json('0.archivos.'.$indice))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.'001-'.$campo.'.pdf');
         }
         $this->getJson('/api/rentas/lotes/999/archivos/rentas')->assertNotFound();
         $this->getJson('/api/rentas/lotes/001/archivos/plano')->assertNotFound();
@@ -127,7 +127,7 @@ class RentasPdfApiTest extends TestCase
                 $this->assertStringContainsString('/api/rentas/lotes/001/', $url);
             }
         }
-        $this->get($response->json('0.archivos.0'))->assertOk()->assertDownload('prueba.pdf');
+        $this->get($response->json('0.archivos.0'))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.'prueba.pdf');
         $this->getJson('/api/rentas/lotes/001/fichas/F2/archivos/1/rentas')->assertNotFound();
         $this->getJson('/api/rentas/lotes/001/fichas/C2/pdf')->assertNotFound();
         $this->getJson('/api/rentas/lotes/001/fichas/E2/pdf')->assertNotFound();
@@ -156,7 +156,7 @@ class RentasPdfApiTest extends TestCase
         $response = $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonCount(3, '0.archivos');
         foreach (['rentas', 'sunarp', 'plano'] as $indice => $campo) {
             $this->assertStringEndsWith('/'.$campo, $response->json('0.archivos.'.$indice));
-            $this->get($response->json('0.archivos.'.$indice))->assertOk()->assertDownload($campo.'.pdf');
+            $this->get($response->json('0.archivos.'.$indice))->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('Content-Disposition', 'inline; filename='.$campo.'.pdf');
         }
         foreach (['imagen1', 'imagen2', 'imagen3'] as $campo) {
             $this->getJson('/api/rentas/lotes/001/fichas/F1/archivos/1/'.$campo)->assertNotFound();
