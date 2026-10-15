@@ -11,7 +11,7 @@ use Mpdf\Mpdf;
 
 class LoteEnlacesController extends Controller
 {
-    private const ARCHIVOS = ['rentas', 'sunarp'];
+    private const ARCHIVOS = ['rentas', 'sunarp', 'plano'];
 
     public function index(Lote $lote)
     {

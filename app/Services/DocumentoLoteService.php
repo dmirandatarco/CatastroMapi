@@ -8,7 +8,7 @@ class DocumentoLoteService
 {
     public function nombreDisponible(string $idLote, string $campo): ?string
     {
-        if (!in_array($campo, ['rentas', 'sunarp'], true)) {
+        if (!in_array($campo, ['rentas', 'sunarp', 'plano'], true)) {
             return null;
         }
         $id = trim($idLote);

@@ -23,7 +23,7 @@ Route::prefix('rentas/lotes/{lote}')
     ->group(function () {
         Route::get('enlaces', [\App\Http\Controllers\Api\LoteEnlacesController::class, 'index'])->name('enlaces');
         Route::get('archivos/{campo}', [\App\Http\Controllers\Api\LoteEnlacesController::class, 'archivoLote'])
-            ->whereIn('campo', ['rentas', 'sunarp'])->name('lote.adjunto');
+            ->whereIn('campo', ['rentas', 'sunarp', 'plano'])->name('lote.adjunto');
         Route::get('fichas/{ficha}/pdf', [\App\Http\Controllers\Api\LoteEnlacesController::class, 'ficha'])->name('ficha.asociada');
         Route::get('fichas/{ficha}/archivos/{archivo}/{campo}', [\App\Http\Controllers\Api\LoteEnlacesController::class, 'archivo'])->name('ficha.adjunto');
         Route::get('fichas-individuales', [\App\Http\Controllers\Api\RentasPdfController::class, 'enlaces'])->name('fichas');

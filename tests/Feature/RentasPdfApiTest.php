@@ -11,6 +11,15 @@ use Tests\TestCase;
 
 class RentasPdfApiTest extends TestCase
 {
+    public function test_plano_compartido_por_lote_aparece_y_se_descarga(): void
+    {
+        Storage::put('img/archivos/001-plano.pdf', '%PDF-plano');
+        $response = $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk();
+        $this->assertSame($response->json('0.archivos'), $response->json('1.archivos'));
+        $this->assertStringEndsWith('/archivos/plano', $response->json('0.archivos.0'));
+        $this->get($response->json('0.archivos.0'))->assertOk()->assertDownload('001-plano.pdf');
+    }
+
     public function test_pu_renderiza_logo_machupicchu_y_datos_sin_marca_wanchaq(): void
     {
         $ficha = (new \App\Models\Ficha)->forceFill(['id_uni_cat' => '08130401023001010101001']);
@@ -134,7 +143,7 @@ class RentasPdfApiTest extends TestCase
         $this->getJson('/api/rentas/lotes/999/enlaces')->assertNotFound();
     }
 
-    public function test_adjuntos_solo_incluyen_sunarp_y_rentas_existentes(): void
+    public function test_adjuntos_incluyen_sunarp_rentas_y_plano_existentes(): void
     {
         DB::table('archivos')->insert([
             'id' => 1, 'id_ficha' => 'F1', 'rentas' => 'rentas.pdf', 'sunarp' => 'sunarp.pdf',
@@ -144,19 +153,19 @@ class RentasPdfApiTest extends TestCase
             Storage::put('img/archivos/'.$nombre, 'contenido');
         }
 
-        $response = $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonCount(2, '0.archivos');
-        foreach (['rentas', 'sunarp'] as $indice => $campo) {
+        $response = $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonCount(3, '0.archivos');
+        foreach (['rentas', 'sunarp', 'plano'] as $indice => $campo) {
             $this->assertStringEndsWith('/'.$campo, $response->json('0.archivos.'.$indice));
             $this->get($response->json('0.archivos.'.$indice))->assertOk()->assertDownload($campo.'.pdf');
         }
-        foreach (['imagen1', 'imagen2', 'imagen3', 'plano'] as $campo) {
+        foreach (['imagen1', 'imagen2', 'imagen3'] as $campo) {
             $this->getJson('/api/rentas/lotes/001/fichas/F1/archivos/1/'.$campo)->assertNotFound();
         }
 
         Storage::delete('img/archivos/rentas.pdf');
-        $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonCount(1, '0.archivos');
+        $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonCount(2, '0.archivos');
         $this->getJson($response->json('0.archivos.0'))->assertNotFound();
-        Storage::delete('img/archivos/sunarp.pdf');
+        Storage::delete(['img/archivos/sunarp.pdf', 'img/archivos/plano.pdf']);
         $this->getJson('/api/rentas/lotes/001/enlaces')->assertOk()->assertJsonPath('0.archivos', []);
 
         Storage::put('privado.pdf', 'contenido');
