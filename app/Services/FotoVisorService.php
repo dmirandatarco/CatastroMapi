@@ -22,17 +22,19 @@ class FotoVisorService
         }
         $bytes = $storage->get($ruta);
         $info = @getimagesizefromstring($bytes);
-        if (!$info || $info[0] * $info[1] > 16000000) {
-            throw new RuntimeException('Imagen inválida o superior a 16 megapíxeles.');
+        if (!$info) {
+            throw new RuntimeException('No se pudo reconocer la imagen original.');
+        }
+        if ($info['mime'] === 'image/jpeg') {
+            // Copiar los bytes originales: no decodificar ni recomprimir fotos de alta resolución.
+            return $bytes;
+        }
+        if ($info[0] * $info[1] > 16000000) {
+            throw new RuntimeException('La imagen no es JPEG y supera 16 megapíxeles; su conversión requiere revisión.');
         }
         $imagen = @imagecreatefromstring($bytes);
         if (!$imagen) {
             throw new RuntimeException('Formato no soportado por GD en este servidor.');
-        }
-        if ($info['mime'] === 'image/jpeg') {
-            // Ya es JPEG: conservar calidad y orientación EXIF de la fotografía.
-            imagedestroy($imagen);
-            return $bytes;
         }
         $fondo = imagecreatetruecolor($info[0], $info[1]);
         try {

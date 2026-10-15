@@ -67,6 +67,22 @@ class FotosVisorTest extends TestCase
         Storage::assertMissing('img/imageneslotes/01009004.jpg');
     }
 
+    public function test_jpeg_de_48_megapixeles_conserva_exactamente_sus_bytes(): void
+    {
+        $imagen = imagecreate(8064, 6048);
+        imagecolorallocate($imagen, 80, 100, 120);
+        ob_start(); imagejpeg($imagen, null, 90); $original = ob_get_clean(); imagedestroy($imagen);
+        $this->ficha('F1', 'foto-grande.jpeg');
+        Storage::put('img/imageneslotes/foto-grande.jpeg', $original);
+        $this->artisan('visor:preparar-fotos --aplicar')->assertExitCode(0);
+        $resultado = Storage::get('img/imageneslotes/01009004.jpg');
+        $this->assertSame($original, $resultado);
+        $this->assertSame(strlen($original), strlen($resultado));
+        $this->assertSame([8064, 6048], array_slice(getimagesizefromstring($resultado), 0, 2));
+        $this->artisan('visor:preparar-fotos --aplicar')->assertExitCode(0);
+        $this->assertSame($original, Storage::get('img/imageneslotes/01009004.jpg'));
+    }
+
     public function test_rechaza_archivos_inseguros_y_avisa_lotes_sin_foto_valida(): void
     {
         $this->ficha('F1', '../foto.png');
