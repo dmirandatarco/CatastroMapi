@@ -389,4 +389,8 @@ class Ficha  extends Authenticatable implements AuditableContract
     {
         return $this->hasOne('App\Models\Archivo','id_ficha','id_ficha');
     }
+    public function archivos()
+    {
+        return $this->hasMany(Archivo::class, 'id_ficha', 'id_ficha');
+    }
 }
